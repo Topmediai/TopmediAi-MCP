@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>TopMediai Audio Preview</title>
+  <style>
+    :root { color-scheme: light dark; font: 14px/1.5 system-ui, sans-serif;
+      --bg: light-dark(#fff, #191919); --surface: light-dark(#f7f7f8, #242424);
+      --ink: light-dark(#222, #f4f4f2); --muted: light-dark(#6b6b73, #b5b5bd);
+      --border: light-dark(#e5e5e9, #3a3a40); --accent: light-dark(#6254d9, #b5aaff); }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; color: var(--ink); background: var(--bg); }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px; }
+    h1 { font-size: 18px; font-weight: 650; margin: 0; }
+    #task-status, #model, #notice { color: var(--muted); margin: 0; }
+    #model { font-size: 12px; margin-bottom: 16px; overflow-wrap: anywhere; }
+    #notice { margin-bottom: 14px; }
+    :is(#model, #notice):empty { display: none; }
+    #tracks { display: grid; gap: 12px; }
+    article { min-width: 0; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+    .track-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .music-icon { display: grid; place-items: center; flex: 0 0 40px; height: 40px; border-radius: 10px;
+      color: var(--accent); background: var(--surface); font-size: 23px; }
+    .track-info { min-width: 0; }
+    h2 { font-size: 14px; margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+    .track-type { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    .player { display: flex; align-items: center; gap: 14px; }
+    button, a { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .play { min-width: 76px; min-height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    .play[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+    .progress { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; }
+    .time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 12px; }
+    .playback-status { margin: 0; color: var(--muted); font-size: 12px; }
+    .actions { display: flex; align-items: center; gap: 14px; font-size: 12px; }
+    a { text-underline-offset: 3px; }
+    .retry { padding: 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; }
+    [hidden] { display: none !important; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .manual-url { font-size: 12px; overflow-wrap: anywhere; user-select: text; margin: 12px 0 0; }
+    @media (max-width: 480px) {
+      body { padding: 12px; } article { padding: 14px; }
+      .player { flex-wrap: wrap; gap: 10px; }
+      .progress { flex-basis: calc(100% - 100px); }
+      .time { margin-left: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header><h1 id="heading">Music Preview</h1><p id="task-status" role="status" aria-live="polite">Reading results…</p></header>
+  <p id="model"></p>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <main id="tracks" aria-label="Playable audio"></main>
+  <script type="module">/* AUDIO_PREVIEW_SCRIPT */</script>
+</body>
+</html>

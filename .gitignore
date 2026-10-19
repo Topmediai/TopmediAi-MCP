@@ -1,0 +1,34 @@
+node_modules/
+dist/
+.data/
+.env
+.env.*
+!.env.example
+plugin/.mcp.json
+*.log
+/plans/
+
+# Local environment overrides
+*.local
+
+# Build and test caches
+*.tsbuildinfo
+.cache/
+coverage/
+.nyc_output/
+
+# Editor and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary and backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.swp
+*.swo
+*~

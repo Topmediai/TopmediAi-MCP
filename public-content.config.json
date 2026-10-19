@@ -1,0 +1,270 @@
+{
+  "version": 1,
+  "allowed_hosts": [
+    "files.topmediai.com",
+    "registry.npmjs.org",
+    "github.com",
+    "docs.github.com",
+    "audiopipe.suno.ai",
+    "cdn1.suno.ai",
+    "cdn2.suno.ai",
+    "opencollective.com",
+    "json-schema.org",
+    "www.topmediai.com",
+    "topmediai-member-api.imyfone.com",
+    "ai-api.imyfone.com",
+    "aimusic-api.topmediai.com",
+    "tts-api.imyfone.com"
+  ],
+  "reviewed_binaries": {
+    "plugin/assets/topmediai-icon.png": {
+      "sha256": "65086fdf9a133b8b5eb85cc22dcaf20ec69867f71057fa0e93ca9a3d172a72fd",
+      "reason": "Reviewed public brand icon; PNG textual metadata removed without changing pixels."
+    }
+  },
+  "exceptions": [
+    {
+      "file": "src/media/music-result.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "62119c49b754d1c8a0e9cb2781c9c1ba577c8b69a59222dffa757b39a9ad7676",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "src/media/speech-result.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "4833b73aca0f13df4d39a3f37e2767ce73105c48e6e0f1541a04bbaeb6c077ce",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "src/media/video-result.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "3543108cbe6f817a68930bc779615b74b9b5dd72b19859679dac9455b2bf03c7",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "tests/audio-preview.test.ts",
+      "category": "private-url",
+      "line_sha256": "71a15f6626122458e00897f490dcc605137830cebd5c92771586710d7a980929",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset.",
+      "build_line_sha256": "71a15f6626122458e00897f490dcc605137830cebd5c92771586710d7a980929"
+    },
+    {
+      "file": "tests/audio-preview.test.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "d9906bc5a8ad59db967bc03b7f839f2ba22e90cd87a663f3c0495f30fa26c73b",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "tests/audio-preview.test.ts",
+      "category": "personal-email",
+      "line_sha256": "0d293caac504ec023ae5f7e4059ee3bff5a0e642abf0ff857697e521c580fce5",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/audio-preview.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "0d293caac504ec023ae5f7e4059ee3bff5a0e642abf0ff857697e521c580fce5",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/image-service.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "57f4ecff904ae447bd2b1d0ab381de565e191610afca666028da6ae62802609e",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/generation.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "5730525abb34b538a7d58d5d83174035940f561dbc016bde6706cc85e7127b5b",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset.",
+      "build_line_sha256": "b14617925fe84073610d61a2915c4fb32d1a045c69a9f0e9c723fe4e3c4e475d"
+    },
+    {
+      "file": "tests/generation.test.ts",
+      "category": "unreviewed-host",
+      "line_sha256": "5730525abb34b538a7d58d5d83174035940f561dbc016bde6706cc85e7127b5b",
+      "reason": "Synthetic private IP addresses used to verify rejection of unsafe media URLs.",
+      "build_line_sha256": "b14617925fe84073610d61a2915c4fb32d1a045c69a9f0e9c723fe4e3c4e475d"
+    },
+    {
+      "file": "tests/redaction.test.ts",
+      "category": "private-url",
+      "line_sha256": "a125a177c42ee628b87c706ba435c12a45da381f923e79c9f3fa346deb1a0e8a",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/redaction.test.ts",
+      "category": "private-url",
+      "line_sha256": "17e5c5198af25fdbcfa8f2c90d6928eb5fe2ad76646afb156dbc882c60f9bdd4",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/reference-images.test.ts",
+      "category": "personal-email",
+      "line_sha256": "dea5dddfc50969a0aab6116dccdb126a78b22a7bb497bbbf066a089b929f8b9f",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/reference-images.test.ts",
+      "category": "personal-email",
+      "line_sha256": "335973b8ae187b2204750c9b7133868b1888fdfaa157b5518b231f5db62e6794",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/reference-images.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "dea5dddfc50969a0aab6116dccdb126a78b22a7bb497bbbf066a089b929f8b9f",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/reference-images.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "335973b8ae187b2204750c9b7133868b1888fdfaa157b5518b231f5db62e6794",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/reference-images.test.ts",
+      "category": "private-url",
+      "line_sha256": "39b2fad75ebc7d01cda6e66eff41a5d5d193514e4e5fc4c045d1f5bdbbac906e",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/request-errors.test.ts",
+      "category": "developer-path",
+      "line_sha256": "777a8bbbbd24d6dc7db409b6c64fda85090ee432b3ee436b096af20335086ac5",
+      "reason": "Synthetic path used to verify private local paths are rejected in upstream error messages."
+    },
+    {
+      "file": "tests/request-errors.test.ts",
+      "category": "private-url",
+      "line_sha256": "777a8bbbbd24d6dc7db409b6c64fda85090ee432b3ee436b096af20335086ac5",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/speech.test.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "c98123f984a5ad971632ce6cf9154bf5472e33048e9de3e36fe4244b06b738e4",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "tests/video-result.test.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "c98123f984a5ad971632ce6cf9154bf5472e33048e9de3e36fe4244b06b738e4",
+      "reason": "Existing client media-address codec; not a credential or access control. Retained for compatible media delivery."
+    },
+    {
+      "file": "tests/video-result.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "5fff064d688b69739901ba33d6dc56ee13de35d412cef76b57305cba743ed306",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
+    },
+    {
+      "file": "tests/video-result.test.ts",
+      "category": "unreviewed-host",
+      "line_sha256": "3e5f6467563e6d973659e2d5c7aa4f9146c56535aa13bc07e0008e044d8e8d2f",
+      "reason": "Synthetic private IP addresses used to verify rejection of unsafe media URLs."
+    },
+    {
+      "file": "tests/video-result.test.ts",
+      "category": "unreviewed-host",
+      "line_sha256": "661b09f419a177e26f9bf2312680d569c13436fd141a9217a8850dae177613fe",
+      "reason": "Synthetic private IP addresses used to verify rejection of unsafe media URLs."
+    },
+    {
+      "file": "tests/video-result.test.ts",
+      "category": "unreviewed-host",
+      "line_sha256": "6a05596bde0099068a20263c001c19ba427a394402cf9e8e32a60e208473e92f",
+      "reason": "Synthetic private IP addresses used to verify rejection of unsafe media URLs."
+    },
+    {
+      "file": "tests/local-auth.test.ts",
+      "category": "credential-literal",
+      "line_sha256": "475dd15c3591f1125622eec821e93d5c681700d00ae448b3dfd42900562d88b4",
+      "build_line_sha256": "475dd15c3591f1125622eec821e93d5c681700d00ae448b3dfd42900562d88b4",
+      "reason": "Synthetic Cookie used to verify cookie-bearing handoff requests are rejected before verification."
+    },
+    {
+      "file": "tests/audio-preview.test.ts",
+      "category": "developer-path",
+      "line_sha256": "4421e81bc3a46f38a072ecfbad1787161387ef4960b54fe746120aa7b25baab3",
+      "build_line_sha256": "4421e81bc3a46f38a072ecfbad1787161387ef4960b54fe746120aa7b25baab3",
+      "reason": "Synthetic local path used for URL rejection or isolated installation-configuration tests."
+    },
+    {
+      "file": "tests/image-preview.test.ts",
+      "category": "developer-path",
+      "line_sha256": "61a6ac7f5a984fac05b3b70e848d05d2854142b8eff267aed8b1246c1f6c2da9",
+      "build_line_sha256": "61a6ac7f5a984fac05b3b70e848d05d2854142b8eff267aed8b1246c1f6c2da9",
+      "reason": "Synthetic local path used for URL rejection or isolated installation-configuration tests."
+    },
+    {
+      "file": "tests/production.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "cc30dd3b593c58490aa4ff2dcfdc0513c333cd2aec1e7106cfa8ead81a0963e6",
+      "reason": "Synthetic credential-bearing URL used to verify production endpoint overrides are rejected before any business request."
+    },
+    {
+      "file": "tests/video-preview.test.ts",
+      "category": "private-url",
+      "line_sha256": "77c66f04e5093189e9f0fbe5796ceb7f88ced1b4f9eeb36ce6aa119325a2e5b6",
+      "reason": "Synthetic signed media URL used to verify exact URL preservation; not a live user asset."
+    },
+    {
+      "file": "tests/video-preview.test.ts",
+      "category": "client-codec-constant",
+      "line_sha256": "c98123f984a5ad971632ce6cf9154bf5472e33048e9de3e36fe4244b06b738e4",
+      "reason": "Existing public client media-address codec used for legacy compatibility fixtures; not a credential or access control."
+    },
+    {
+      "file": "tests/video-preview.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "06130cc10b0797effdce9b1937d475857fde603fd34b865a1aa31adcb85f72dd",
+      "reason": "Synthetic URL credentials used only to verify rejection; not an account."
+    },
+    {
+      "file": "tests/video-preview.test.ts",
+      "category": "private-url",
+      "line_sha256": "3b9779d09498acddb478953c7cd86eea69167c5e3af2297e720d3443f46fed51",
+      "reason": "Synthetic fragment used to verify media URL rejection."
+    },
+    {
+      "file": "tests/video-preview.test.ts",
+      "category": "personal-email",
+      "line_sha256": "06130cc10b0797effdce9b1937d475857fde603fd34b865a1aa31adcb85f72dd",
+      "reason": "Synthetic user:pass URL used only for credential rejection; not a personal email address."
+    }
+  ],
+  "public_email_domains": [
+    "users.noreply.github.com"
+  ],
+  "public_emails": [
+    "noreply@github.com"
+  ],
+  "internal_text_fingerprints": [
+    {
+      "length": 16,
+      "sha256": "6d827a1d612697588929b13c66b8e86450045459fc6091206f612a98f3d1c24f",
+      "reason": "Internal repository or project identifier; the public scanner retains only its fingerprint."
+    },
+    {
+      "length": 17,
+      "sha256": "8fbfd6c64121e435928ab23b48f7ec1ce825195684dfd2b8980fe6e6b88b0e1a",
+      "reason": "Internal repository or project identifier; the public scanner retains only its fingerprint."
+    },
+    {
+      "length": 7,
+      "sha256": "7ea5de2af53bae6582c7043f416fccaf44b8170a99ff24c782ca7e9fde7773db",
+      "reason": "Internal repository or project identifier; the public scanner retains only its fingerprint."
+    },
+    {
+      "length": 14,
+      "sha256": "d9ac77061e50c3dbbeb86fa43086817d19c8bdee0eba7182cb2d99dc01502c44",
+      "reason": "Internal repository or project identifier; the public scanner retains only its fingerprint."
+    }
+  ],
+  "production_only": true,
+  "blocked_host_suffix_sha256": [
+    "b3d4607e5b476bdbb19278bda5f19125f214af97496f216dadcc45c9e4b33d49"
+  ],
+  "require_single_root": true
+}

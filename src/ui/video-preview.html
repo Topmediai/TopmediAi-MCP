@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>TopMediai Video Preview</title>
+  <style>
+    :root { color-scheme: light dark; font: 14px/1.5 system-ui, sans-serif;
+      --bg: light-dark(#fff, #191919); --surface: light-dark(#f7f7f8, #242424);
+      --ink: light-dark(#222, #f4f4f2); --muted: light-dark(#6b6b73, #b5b5bd);
+      --border: light-dark(#e5e5e9, #3a3a40); --accent: light-dark(#6254d9, #b5aaff); }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; color: var(--ink); background: var(--bg); }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 6px; }
+    h1 { font-size: 18px; font-weight: 650; margin: 0; }
+    #task-status, #model, #notice { color: var(--muted); margin: 0; }
+    #model { font-size: 12px; margin-bottom: 16px; overflow-wrap: anywhere; }
+    #notice { margin-bottom: 14px; }
+    :is(#model, #notice):empty { display: none; }
+    #videos { display: grid; gap: 16px; }
+    article { min-width: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    h2 { font-size: 14px; margin: 0; padding: 12px 16px; font-weight: 600; overflow-wrap: anywhere; }
+    .player { position: relative; display: grid; place-items: center; background: #111; }
+    video { display: block; width: 100%; aspect-ratio: 16 / 9; max-height: 560px; object-fit: contain; }
+    button, a { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    .play { position: absolute; padding: 12px 20px; border: 1px solid #ffffff50; border-radius: 999px;
+      color: #fff; background: #000b; font-weight: 600; }
+    footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 12px 16px; }
+    .playback-status { margin: 0; color: var(--muted); font-size: 12px; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; font-size: 12px; }
+    a { text-underline-offset: 3px; }
+    .retry { padding: 0; border: 0; background: none; text-decoration: underline; text-underline-offset: 3px; }
+    [hidden] { display: none !important; }
+    button:focus-visible, a:focus-visible, video:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .manual-url { font-size: 12px; overflow-wrap: anywhere; user-select: text; margin: 0; padding: 0 16px 12px; }
+    @media (max-width: 480px) { body { padding: 12px; } h2, footer { padding: 12px; } }
+  </style>
+</head>
+<body>
+  <header><h1>Video Preview</h1><p id="task-status" role="status" aria-live="polite">Reading results…</p></header>
+  <p id="model"></p>
+  <p id="notice" role="status" aria-live="polite"></p>
+  <main id="videos" aria-label="Playable videos"></main>
+  <script type="module">/* VIDEO_PREVIEW_SCRIPT */</script>
+</body>
+</html>
