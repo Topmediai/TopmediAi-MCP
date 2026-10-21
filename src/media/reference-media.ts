@@ -82,7 +82,7 @@ export class ReferenceMediaService {
     }
     const backend = new Backend({ ...this.config, timeoutMs: this.config.audioTimeoutMs ?? 300_000 }); backend.requireToken();
     const media = await prepareReferenceMedia(this.config.uploadRoot, filePath, kind, this.config, modelType);
-    try { await verifyAccountToken({ environment: this.config.environment, memberOrigin: this.config.memberHost }, this.config.token); }
+    try { await verifyAccountToken({ environment: this.config.environment, memberOrigin: this.config.memberHost, clientSource: this.config.clientSource }, this.config.token); }
     catch (error) { throw new TopMediaiError(error instanceof AccountVerificationError && error.code === 'login_required' ? 'LOGIN_REQUIRED' : 'ACCOUNT_UNAVAILABLE', 'The account could not be verified. No media was uploaded.'); }
     const form = new FormData(); form.set('source', MEDIA_REFERENCE_SOURCE);
     form.set('file', new Blob([new Uint8Array(media.data)], { type: media.mime_type }), `${randomUUID()}.${kind === 'video' ? 'mp4' : 'wav'}`);

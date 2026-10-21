@@ -34,7 +34,7 @@ export class RuntimeServices {
 
   current(snapshot?: Config): RuntimeContext {
     if (!snapshot && !this.reloadConfig) return this.context;
-    // A missing, invalid or unsafe credential must never fall back to the old token.
+    // A missing, invalid or inaccessible credential must never fall back to the old token.
     const config = snapshot ?? this.reloadConfig!();
     const signature = this.key(config);
     if (signature !== this.signature) {

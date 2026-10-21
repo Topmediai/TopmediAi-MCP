@@ -5,6 +5,8 @@ dist/
 .env.*
 !.env.example
 plugin/.mcp.json
+plugin/.cursor-mcp.json
+.cursor/
 *.log
 /plans/
 

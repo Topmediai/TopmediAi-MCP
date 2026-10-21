@@ -1,6 +1,6 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, relative, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -8,6 +8,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { readCredentialAsync, saveCredential, deleteCredential, type Credential } from '../src/credentials.js';
 import { createAsyncRuntimeConfigLoader } from '../src/config.js';
 import { createServer } from '../src/server.js';
+import { MemoryCredentialStore } from './fixtures/credential-store.js';
 import { TopMediaiError } from '../src/types.js';
 
 const account = { memberId: '101', email: 'fixture@example.test', emailMasked: 'f***@example.test' };
@@ -24,29 +25,26 @@ async function directory(t: TestContext) {
   return resolve(dir, 'credentials');
 }
 
-test('private credential reads verify permissions asynchronously and see replacement and logout immediately', async t => {
-  const dir = await directory(t);
-  assert.equal(await readCredentialAsync('production', dir), null);
-  await saveCredential('production', account, tokenA, () => {}, dir);
-  let ticks = 0; const timer = setInterval(() => { ticks++; }, 5);
-  try {
-    assert.equal((await readCredentialAsync('production', dir))?.token, tokenA);
-    if (process.platform === 'win32') assert.ok(ticks > 1, 'Windows ACL verification must leave the event loop available');
-  } finally { clearInterval(timer); }
-  await saveCredential('production', account, tokenB, () => {}, dir);
-  assert.equal((await readCredentialAsync('production', dir))?.token, tokenB);
-  const pending = readCredentialAsync('production', dir); deleteCredential('production', dir);
-  assert.equal(await pending, null);
-  assert.equal(await readCredentialAsync('production', dir), null);
+test('credential reads see replacement and logout without caching', async () => {
+  const store = new MemoryCredentialStore();
+  assert.equal(await readCredentialAsync('production', store), null);
+  await saveCredential('production', account, tokenA, () => {}, store);
+  assert.equal((await readCredentialAsync('production', store))?.token, tokenA);
+  await saveCredential('production', account, tokenB, () => {}, store);
+  assert.equal((await readCredentialAsync('production', store))?.token, tokenB);
+  await deleteCredential('production', store);
+  assert.equal(await readCredentialAsync('production', store), null);
 });
 
-test('async credentials reject unsafe permissions and corruption without reusing the last token', async t => {
-  const dir = await directory(t); await saveCredential('production', account, tokenA, () => {}, dir);
-  const text = await readFile(resolve(dir, 'production.json'), 'utf8');
-  await writeFile(resolve(dir, 'production.json'), JSON.stringify({ ...JSON.parse(text), environment: 'unsupported' }));
-  await assert.rejects(readCredentialAsync('production', dir));
-  await writeFile(resolve(dir, 'production.json'), '{broken');
-  await assert.rejects(readCredentialAsync('production', dir), (error: unknown) => error instanceof TopMediaiError && error.code === 'CREDENTIAL_CORRUPT');
+test('credential reads reject corruption and store errors instead of reusing an old token', async () => {
+  const store = new MemoryCredentialStore();
+  await saveCredential('production', account, tokenA, () => {}, store);
+  store.values.set('production', JSON.stringify({ ...JSON.parse(store.values.get('production')!), environment: 'unsupported' }));
+  await assert.rejects(readCredentialAsync('production', store));
+  store.values.set('production', '{broken');
+  await assert.rejects(readCredentialAsync('production', store), (error: unknown) => error instanceof TopMediaiError && error.code === 'CREDENTIAL_CORRUPT');
+  store.readAsync = async () => { throw new Error('credential store is locked'); };
+  await assert.rejects(readCredentialAsync('production', store), (error: unknown) => error instanceof TopMediaiError && error.code === 'CREDENTIAL_STORE_LOCKED');
 });
 
 test('async runtime reload freezes launch settings, validates before reads and honors explicit overrides', async () => {

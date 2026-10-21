@@ -1,6 +1,8 @@
 import { AuthProtocolError, isRecord, normalizeMemberId, validToken, type Environment } from './auth-protocol.js';
 import { TopMediaiError } from './types.js';
 import { readJson } from './transport/json.js';
+import { businessFetch } from './transport/http.js';
+import type { McpClientSource } from './client-source.js';
 
 export type { Environment } from './auth-protocol.js';
 export interface VerifiedAccount {
@@ -20,6 +22,7 @@ export interface AccountVerificationOptions {
   /** Compatibility with the separately configured production gateway only. */
   legacyProductionGateway?: boolean;
   timeoutMs?: number;
+  clientSource?: McpClientSource;
 }
 export function normalizeAccountIdentity(value: unknown): VerifiedAccount {
   if (!isRecord(value)) throw new AccountVerificationError('account_unavailable');
@@ -67,7 +70,7 @@ export async function verifyAccountToken(
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
   try {
     const path = options.legacyProductionGateway ? '/client/openclaw/v1/account' : '/user/member/info?product_type=1';
-    const response = await fetch(new URL(path, origin), {
+    const response = await businessFetch({ memberHost: origin.origin, clientSource: options.clientSource }, new URL(path, origin), {
       method: 'GET', headers: { Accept: 'application/json', token },
       redirect: 'error', credentials: 'omit', cache: 'no-store', signal: combined,
     });

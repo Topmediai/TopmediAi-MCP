@@ -8,7 +8,7 @@ TopMediai 的本機 TypeScript stdio MCP 伺服器與 Codex 外掛程式。目�
 
 ## 安裝與登入
 
-需要 Node.js >= 22.18、Codex CLI，以及可存取的官方連線頁面。目前瀏覽器登入支援同一台 Windows 電腦上的瀏覽器與 MCP 伺服器。PowerShell 請使用 `npm.cmd`；其他支援的 shell 可使用 `npm`。
+需要 Node.js >= 22.18 及可存取的官方連線頁面。Codex 安裝程式另需 Codex CLI，Cursor 安裝則不需要。瀏覽器與 MCP 必須在同一台電腦執行。PowerShell 使用 `npm.cmd`，其他支援的 shell 可用 `npm`。
 
 在專案目錄執行：
 
@@ -17,6 +17,8 @@ npm.cmd ci
 npm.cmd test
 npm.cmd run install:codex
 ```
+
+Cursor 可在安裝相依套件後執行 `npm.cmd run install:cursor`；若只安裝到指定專案，加入 `-- --project ./my-project`。詳見 [Cursor 指南（英文）](../cursor.md)。
 
 外掛程式在 Codex 中顯示為 `TopMediAi-MCP`，安裝識別碼為 `topmediai-mcp@topmediai-local`。安裝會產生本機 `plugin/.mcp.json`，不會將 Token 或 Cookie 寫入外掛程式。該檔案包含本機執行檔路徑，不可提交或散布；移動專案或更換電腦後請重新安裝。
 
@@ -41,7 +43,9 @@ npm.cmd run logout
 - 預設直接連線正式 API。服務位址必須是有效的 HTTPS Origin，必要設定明確留空會被拒絕。舊閘道僅在明確設定 `TOPMEDIAI_PRODUCTION_GATEWAY_HOST` 時啟用，且功能有限。
 - 安裝時讀取 shell 設定並固定服務位址、環境與上傳設定。覆寫值請在安裝前設定；直接啟動與登入 CLI 的差異請參閱設定範例註解。
 - 一般安裝使用私人儲存的憑證。`TOPMEDIAI_TOKEN` 僅供明確覆寫，不可放入公開檔案、截圖或問題回報。標準安裝會清空舊覆寫值，避免沿用過期憑證。
-- Windows 憑證儲存於 `%LOCALAPPDATA%\TopMediai\credentials\`，每次工具呼叫前重新驗證。切換帳號時會選用對應任務目錄；已執行中的請求仍使用原帳號。
+- 憑證改存 Windows Credential Manager、macOS Keychain 或 Linux Secret Service，每次呼叫前重新讀取。載入已儲存憑證時為 `credential_source=system-store`，`credential_storage` 顯示系統儲存庫名稱。切換帳號會選用對應任務目錄，執行中的請求仍保留原憑證。
+- **從 JSON 儲存升級後需重新登入。** 舊 JSON 不再讀取、不自動移轉，也不自動刪除；舊目錄僅供不含 Token 的登入鎖中繼資料使用，殘留秘密檔案需另外處理，不能公開。Linux 需要桌面 D-Bus 與 Secret Service。儲存庫鎖定、拒絕或不可用時不退回明文檔案；系統密碼只能輸入 OS 視窗，不能貼入聊天。
+- Windows 系統憑證的儲存、讀取、刪除已通過隔離測試；macOS/Linux 完整客戶端流程仍需實機驗收。同一 OS 使用者的 Codex/Cursor 共用正式憑證，登出或切換會影響兩邊後續呼叫，但系統儲存庫不保證隔離所有同使用者程序。
 - 生成及上傳無須額外功能開關。上傳仍需要針對指定檔案的許可及專用目錄。服務位址、上傳設定或程式碼變更後，請更新安裝設定與套件並重新連線 MCP。
 - 本機登出僅刪除儲存的憑證，不會登出網站、撤銷伺服器 Token 或取消已提交任務。
 
@@ -50,6 +54,10 @@ npm.cmd run setup:plugin
 ```
 
 更新後請核對 `get_service_status.server_version`，不必預設重新啟動整個應用程式。
+
+以各客戶端的啟動設定指定 `MCP_CLIENT_SOURCE`：Codex 為 `5`、Claude Code 為 `6`、Cursor 為 `7`，未知則省略請求標頭。安裝程式會設定各自編號，原 `TOPMEDIAI_SOURCE` 請求本文渠道不變。更新後請更新啟動設定並重新連線，詳見[客戶端來源（英文）](../client-source.md)。
+
+提供聲音開關的影片操作在省略 `generate_audio` 時預設有聲。明確要求靜音才傳 `false`；無開關模型遵循供應商行為，強制有聲模型無法關閉。目錄、報價及提交需使用相同設定，變更後重新報價。
 
 ## 工具與創作流程
 

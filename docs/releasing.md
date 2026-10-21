@@ -41,6 +41,8 @@ If history must be retained, clean it in a separate copy and rescan every intend
 
 - Pass snapshot and intended-history checks, installation, build, and tests.
 - Verify documentation links, credential-free examples, and reviewed runtime endpoints.
+- Ensure instructions describe system credential storage and the required re-login after upgrading from JSON files. Validate native dependency installation and distinguish tested Windows storage from unverified macOS/Linux client workflows.
+- Exclude legacy credential files, generated Codex/Cursor configurations, and Cursor backups, which may contain unrelated services' secrets.
 - Create release attachments only from the reviewed directory, excluding local workspaces and private reports.
 - Inspect new images, screenshots, audio, video, and metadata individually. Use shared diagnostic copies for issue reports.
 - Enable applicable GitHub secret scanning and push protection as supplementary safeguards. They do not replace checks for plugin fields, internal information, or local paths. See [GitHub secret scanning](https://docs.github.com/en/code-security/concepts/secret-security/secret-scanning).

@@ -15,7 +15,7 @@ export interface LocalAuthOptions {
   environment: Environment;
   webOrigin: string;
   verifyAccount: (token: string, signal: AbortSignal) => Promise<VerifiedAccount>;
-  /** Check immediately before replacement; returned ms bounds post-commit checks. Resolve only after file and ACL verification. */
+  /** Check before and after system-store writes; returned ms bounds post-commit verification. */
   saveCredential: (account: VerifiedAccount, token: string, assertCanCommit: () => number) => Promise<void>;
   authorizationTimeoutMs?: number;
   acknowledgementTimeoutMs?: number;

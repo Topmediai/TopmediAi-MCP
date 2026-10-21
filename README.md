@@ -2,13 +2,13 @@
 
 **English** · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md) · [Deutsch](docs/i18n/README.de.md) · [Français](docs/i18n/README.fr.md) · [Español](docs/i18n/README.es.md) · [Italiano](docs/i18n/README.it.md) · [繁體中文](docs/i18n/README.zh-TW.md)
 
-A local TypeScript stdio MCP server and Codex plugin for TopMediai. Version **1.0.0** supports image generation, image-to-image, music, video, mixed-media reference video, text-to-speech (TTS), and speech-to-speech (STS). It includes model catalogs, cost estimates, budget validation, task recovery, and image/audio/video previews. Denoising, voice cloning, and music videos are not available.
+A local TypeScript stdio MCP server with Codex and Cursor integration for TopMediai. Version **1.0.0** supports image generation, image-to-image, music, video, mixed-media reference video, text-to-speech (TTS), and speech-to-speech (STS). It includes model catalogs, cost estimates, budget validation, task recovery, and image/audio/video previews. Denoising, voice cloning, and music videos are not available.
 
 Generation uses the signed-in account's entitlements. Query the model catalog and obtain an exact quote before submitting, then apply the user's budget and the current conversation's confirmation preferences. Uploading reference files requires permission for external storage; uploaded URLs may be publicly accessible. See [Data and privacy](docs/privacy.md).
 
 ## Installation and sign-in
 
-Requires Node.js >= 22.18, the Codex CLI, and access to the official connection page. Browser sign-in currently supports a browser and MCP server running on the same Windows computer. Use `npm.cmd` in PowerShell; other supported shells can use `npm`.
+Requires Node.js >= 22.18 and access to the official connection page. The Codex installer also requires the Codex CLI; the Cursor installer does not. The browser and MCP server must run on the same computer. Windows system credential storage has been tested; complete macOS/Linux client flows still require acceptance testing. Linux requires a desktop D-Bus session and a Secret Service provider such as GNOME Keyring. Use `npm.cmd` in PowerShell; other supported shells can use `npm`.
 
 Run from the project directory:
 
@@ -19,6 +19,8 @@ npm.cmd run install:codex
 ```
 
 The plugin appears in Codex as `TopMediAi-MCP`, with installation identifier `topmediai-mcp@topmediai-local`.
+
+For Cursor, use `npm.cmd run install:cursor` after installing dependencies. Add `-- --project './my-project'` for a project-only installation; otherwise it installs globally. See the [Cursor guide](docs/cursor.md) for configuration, backups, and client limitations.
 
 Installation creates a local `plugin/.mcp.json` without storing tokens or cookies in the plugin. This file contains local executable paths and must not be committed or distributed. Reinstall after moving the project or switching computers.
 
@@ -43,9 +45,11 @@ The public installer, server, and CLI commands support **production only**, with
 - Production uses direct APIs by default. Service addresses must be valid HTTPS origins; explicitly empty required values are rejected. The legacy gateway is enabled only by an explicit `TOPMEDIAI_PRODUCTION_GATEWAY_HOST` and has limited capabilities.
 - Installation reads shell configuration and freezes service addresses, environment, and upload settings. Set overrides before installation. See the example comments for direct startup and sign-in CLI behavior.
 - Normal installations use private saved credentials. `TOPMEDIAI_TOKEN` is an explicit override and must never appear in public files, screenshots, or issue reports. Standard installation clears this override to avoid inheriting old credentials.
-- On Windows, credentials are stored under `%LOCALAPPDATA%\TopMediai\credentials\` and revalidated before every tool call. Switching accounts selects the corresponding task directory; requests already in flight retain their original account.
+- Credentials are saved in Windows Credential Manager, macOS Keychain, or Linux Secret Service and reread before every tool call. `get_service_status.credential_source` is `system-store` when a saved credential is loaded; `credential_storage` identifies the system store. Account switches select the corresponding task directory; requests already in flight retain their original account.
 - Generation and uploads need no extra feature switches. Uploads still require authorization for specific files and a dedicated directory. After changing endpoints, upload settings, or code, refresh the installed configuration and plugin package, then reconnect MCP.
-- Local logout deletes saved credentials. It does not sign out the website, revoke server-side tokens, or cancel submitted tasks.
+- Local logout deletes and verifies removal of the saved system credential. If verification fails, the outcome remains unconfirmed. It does not sign out the website, revoke server-side tokens, or cancel submitted tasks.
+
+**Upgrading from JSON credential storage:** reconnect your account after upgrading. Old JSON credentials are not read, migrated, or automatically deleted. The former credential directory is now used only for login-lock metadata; handle any legacy secret files separately and never include them in a release. If the system store is locked, denied, or unavailable, resolve the system prompt or service issue; there is no plaintext fallback. Enter your computer password only in the operating system's dialog, never in chat. Codex and Cursor running as the same OS user share the production credential; signing out or switching accounts affects subsequent calls in both clients. System storage does not isolate all processes running as that user.
 
 Refresh configuration with:
 
@@ -54,6 +58,8 @@ npm.cmd run setup:plugin
 ```
 
 After updating the plugin, verify `get_service_status.server_version`. Do not assume the entire application needs a restart.
+
+Client identity is configured per launch with `MCP_CLIENT_SOURCE`: `5` for Codex, `6` for Claude Code, and `7` for Cursor. Unknown clients omit the business `source` header. Codex/Cursor installers set their own values; the existing `TOPMEDIAI_SOURCE` request-body channel remains separate. Reinstall or refresh launch settings and reconnect after updating. See [Client identity](docs/client-source.md).
 
 ## Tools and creative workflow
 
@@ -69,6 +75,8 @@ After updating the plugin, verify `get_service_status.server_version`. Do not as
 | Multimedia status and playback | `get_generation_capabilities`, `get_generation_task`, `preview_audio_task` |
 
 The actual loaded tool list is authoritative. When no model is specified, use the default returned by the current catalog; do not switch models based on price or style. Read parameters, reference limits, voice languages, and capabilities from that catalog. A listed model is not proof that quoting or generation is available.
+
+Video operations with an audio switch default to sound on when `generate_audio` is omitted. Set `false` for an explicit silent-video request. Models without a switch retain provider behavior; forced-audio models cannot be muted. Keep catalog, quote, and submission settings consistent and requote after changes.
 
 Obtain a valid quote before submitting with a stable `request_id` and an explicit budget. `review_generation_plan` summarizes quotes for the current flow. By default, confirmation is required for designated high-price models or an estimated flow total strictly above 1000 credits. Explicit user preferences take precedence. Reassess expired quotes, changed inputs, or higher prices. The tool does not replace user consent, and a local budget is not a server-enforced spending cap.
 

@@ -8,7 +8,7 @@ La generación utiliza los derechos de la cuenta conectada. Consulta el catálog
 
 ## Instalación e inicio de sesión
 
-Se necesitan Node.js >= 22.18, Codex CLI y acceso a la página oficial de conexión. Actualmente, el inicio de sesión admite el navegador y el servidor MCP en el mismo equipo Windows. Usa `npm.cmd` en PowerShell; otros intérpretes compatibles pueden usar `npm`.
+Se necesitan Node.js >= 22.18 y acceso a la página oficial. El instalador Codex requiere Codex CLI; el de Cursor no. Navegador y MCP deben ejecutarse en el mismo equipo. Usa `npm.cmd` en PowerShell o `npm` en otros intérpretes compatibles.
 
 Desde el directorio del proyecto:
 
@@ -17,6 +17,8 @@ npm.cmd ci
 npm.cmd test
 npm.cmd run install:codex
 ```
+
+Para Cursor, instala las dependencias y ejecuta `npm.cmd run install:cursor`. Añade `-- --project ./my-project` para instalar solo en ese proyecto. Consulta la [guía de Cursor (inglés)](../cursor.md).
 
 El complemento aparece como `TopMediAi-MCP`, con identificador `topmediai-mcp@topmediai-local`. La instalación crea `plugin/.mcp.json` sin guardar tokens ni cookies en el complemento. Contiene rutas locales de ejecutables: no lo incluyas en commits ni lo distribuyas. Reinstala tras mover el proyecto o cambiar de equipo.
 
@@ -41,7 +43,9 @@ El instalador público, el servidor y la CLI admiten **solo producción**, con d
 - Por defecto se usan API directas. Las direcciones deben ser orígenes HTTPS válidos; se rechazan valores obligatorios explícitamente vacíos. La pasarela heredada, de capacidad limitada, solo se activa con `TOPMEDIAI_PRODUCTION_GATEWAY_HOST` explícito.
 - La instalación lee la configuración del intérprete y fija direcciones, entorno y opciones de subida. Establece las modificaciones antes de instalar. Los comentarios del ejemplo explican el arranque directo y la CLI de acceso.
 - Las instalaciones normales usan credenciales privadas guardadas. `TOPMEDIAI_TOKEN` es una sustitución explícita y nunca debe aparecer en archivos públicos, capturas o incidencias. La instalación estándar vacía las sustituciones antiguas.
-- En Windows se guardan en `%LOCALAPPDATA%\TopMediai\credentials\` y se validan de nuevo antes de cada llamada. Cambiar de cuenta selecciona su directorio de tareas; las solicitudes en curso conservan la cuenta original.
+- Las credenciales se guardan en Windows Credential Manager, macOS Keychain o Linux Secret Service y se releen antes de cada llamada. Una credencial guardada cargada muestra `credential_source=system-store`; `credential_storage` identifica el almacén. Cambiar de cuenta selecciona su directorio de tareas; las solicitudes en curso mantienen las credenciales originales.
+- **Vuelve a iniciar sesión tras actualizar desde almacenamiento JSON.** Los archivos JSON antiguos no se leen, migran ni eliminan automáticamente. Su directorio anterior solo se usa para metadatos de bloqueo de inicio de sesión; gestiona los archivos secretos antiguos por separado y no los publiques. Linux necesita D-Bus de escritorio y Secret Service. Si el almacén está bloqueado, denegado o no disponible, no se recurre a texto plano. Introduce contraseñas solo en los diálogos del sistema.
+- Se han verificado aisladamente guardado, lectura y borrado en Windows; los flujos completos macOS/Linux aún necesitan pruebas reales. Codex/Cursor con el mismo usuario del sistema comparten credenciales de producción: cerrar sesión o cambiar de cuenta afecta a las siguientes llamadas de ambos. El almacén no aísla todos los procesos del mismo usuario.
 - Generar y subir archivos no requiere interruptores adicionales. Las subidas necesitan autorización para los archivos concretos y un directorio dedicado. Tras cambiar direcciones, ajustes o código, actualiza configuración y paquete y reconecta MCP.
 - Cerrar sesión localmente elimina las credenciales guardadas, pero no cierra la sesión web, revoca tokens del servidor ni cancela tareas enviadas.
 
@@ -50,6 +54,10 @@ npm.cmd run setup:plugin
 ```
 
 Comprueba `get_service_status.server_version` después de actualizar. No presupongas que hay que reiniciar toda la aplicación.
+
+Configura `MCP_CLIENT_SOURCE` por lanzamiento: Codex `5`, Claude Code `6`, Cursor `7`; si es desconocido no se envía cabecera. Los instaladores fijan su valor y el canal `TOPMEDIAI_SOURCE` del cuerpo no cambia. Actualiza la configuración y reconecta tras una actualización. Consulta [Identidad del cliente (inglés)](../client-source.md).
+
+Las operaciones de vídeo con interruptor de audio activan el sonido por defecto si se omite `generate_audio`. Usa `false` para una petición explícita de vídeo mudo. Los modelos sin interruptor mantienen el comportamiento del proveedor; los de audio obligatorio no se pueden silenciar. Catálogo, cotización y envío deben coincidir; vuelve a cotizar tras cambiarlo.
 
 ## Herramientas y flujo creativo
 

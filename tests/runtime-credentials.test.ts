@@ -1,6 +1,6 @@
 import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, mkdir, writeFile, unlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, relative, isAbsolute, join } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -8,7 +8,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { createServer } from '../src/server.js';
 import { createRuntimeConfigLoader, ROOT } from '../src/config.js';
-import { saveCredential, deleteCredential, type Credential } from '../src/credentials.js';
+import { type Credential } from '../src/credentials.js';
 import { checkPluginServer } from '../src/install-check.js';
 import { TopMediaiError } from '../src/types.js';
 
@@ -81,7 +81,7 @@ test('one MCP connection handles missing login, new login, creation and local lo
   assert.equal(missing.error.code, 'LOGIN_REQUIRED'); assert.equal(missing.login_guidance.restart_required, false);
   assert.equal(f.calls.length, 0);
   f.setCredential(credential(tokenA));
-  assert.equal(content(await f.call('get_service_status')).credential_source, 'local-file');
+  assert.equal(content(await f.call('get_service_status')).credential_source, 'system-store');
   assert.equal(content(await f.call('get_balance')).credits, 88);
   const quote = content(await f.call('estimate_image_cost', image));
   assert.equal(content(await f.call('generate_image', { quote_id: quote.quote_id, request_id: 'after-login', max_credits: 2 })).group_id, '12345');
@@ -156,7 +156,7 @@ test('runtime credential refresh freezes launch settings and respects explicit d
 
 function isolatedLaunch(root: string) {
   const preload = `process.loadEnvFile = () => {}; globalThis.fetch = () => { throw new Error('Live network forbidden'); };`;
-  return { command: process.execPath, args: ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, resolve(ROOT, 'dist/src/index.js')],
+  return { command: process.execPath, args: ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, resolve(ROOT, 'dist/tests/fixtures/stdio-credentials.js')],
     env: { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined)),
       TOPMEDIAI_TOKEN: '', TOPMEDIAI_ENV: 'production', TOPMEDIAI_MODE: 'live', TOPMEDIAI_DATA_DIR: join(root, 'state'),
       TOPMEDIAI_MEMBER_HOST: 'https://member.fixture.invalid', TOPMEDIAI_IMAGE_HOST: 'https://image.fixture.invalid',
@@ -165,18 +165,19 @@ function isolatedLaunch(root: string) {
       LOCALAPPDATA: root, USERPROFILE: root, HOME: root }, stderr: 'pipe' as const };
 }
 
-test('real stdio entry reloads private credentials after save and delete without reconnecting', async t => {
+test('stdio runtime reloads injected credentials after save and delete without reconnecting', async t => {
   const root = await directory(t), launch = isolatedLaunch(root);
   const client = new Client({ name: 'saved-credential-test', version: '1' });
   const transport = new StdioClientTransport(launch); transport.stderr?.on('data', () => {});
   await client.connect(transport); t.after(() => client.close());
   const status = async () => content(await client.callTool({ name: 'get_service_status', arguments: {} }));
   assert.equal((await status()).token_configured, false);
-  const privateDirectory = process.platform === 'win32' ? join(root, 'TopMediai', 'credentials') : join(root, '.local', 'share', 'topmediai', 'credentials');
-  await saveCredential('production', { memberId: '101', email: 'user@example.test', emailMasked: 'u***@example.test' }, tokenA, () => {}, privateDirectory);
-  const saved = await status(); assert.equal(saved.token_configured, true); assert.equal(saved.credential_source, 'local-file');
+  const controlFile = join(root, 'state', 'fixture-credential.json');
+  await mkdir(join(root, 'state'), { recursive: true });
+  await writeFile(controlFile, JSON.stringify(credential(tokenA)));
+  const saved = await status(); assert.equal(saved.token_configured, true); assert.equal(saved.credential_source, 'system-store');
   assert.equal(saved.login_guidance.restart_required, false); assert.ok(!JSON.stringify(saved).includes(tokenA));
-  deleteCredential('production', privateDirectory);
+  await unlink(controlFile);
   assert.equal((await status()).token_configured, false);
 });
 
@@ -186,4 +187,20 @@ test('installation self-check verifies MCP tools without claiming current chat o
   assert.equal(check.server_version, '1.0.0'); assert.equal(check.tool_count, 35);
   assert.equal(check.credential_refresh_enabled, true); assert.equal(check.token_configured, false);
   assert.equal(check.current_chat_tools_verified, false); assert.equal(check.backend_account_verified, false);
+});
+
+test('stdio handshake and recovery tools remain available when stored credentials are corrupt', async t => {
+  const root = await directory(t), launch = isolatedLaunch(root);
+  await mkdir(join(root, 'state'), { recursive: true });
+  const controlFile = join(root, 'state', 'fixture-credential.json');
+  await writeFile(controlFile, '{broken');
+  const client = new Client({ name: 'credential-recovery-test', version: '1' });
+  const transport = new StdioClientTransport(launch); transport.stderr?.on('data', () => {});
+  await client.connect(transport); t.after(() => client.close());
+  assert.ok((await client.listTools()).tools.some(tool => tool.name === 'start_login'));
+  const failed = error(await client.callTool({ name: 'get_balance', arguments: {} }));
+  assert.equal(failed.error.code, 'CREDENTIAL_CORRUPT');
+  await writeFile(controlFile, JSON.stringify(credential(tokenA)));
+  const recovered = content(await client.callTool({ name: 'get_service_status', arguments: {} }));
+  assert.equal(recovered.token_configured, true); assert.equal(recovered.credential_source, 'system-store');
 });

@@ -5,12 +5,14 @@ import { verifyAccountToken } from './account.js';
 import { createLocalAuthSession, type LocalAuthResult, type LocalAuthSession } from './local-auth.js';
 import { openBrowser } from './browser.js';
 import { TopMediaiError } from './types.js';
+import type { CredentialStore } from './credential-store.js';
 
 export interface LoginFlowDependencies {
   createSession?: typeof createLocalAuthSession;
   openBrowser?: typeof openBrowser;
   acquireLock?: typeof acquireLoginLock;
   launchEnvironment?: NodeJS.ProcessEnv;
+  credentialStore?: CredentialStore;
 }
 interface LoginAttempt {
   id: string;
@@ -19,6 +21,7 @@ interface LoginAttempt {
   result?: LocalAuthResult;
   finished: Promise<LocalAuthResult>;
   cleanup: Promise<void>;
+  credentialError?: { code: string; message: string };
 }
 
 /** One local authorization attempt; wait calls never create a new browser/session. */
@@ -51,7 +54,9 @@ export class LoginFlow {
       } : {
         continue_original_request: false,
         instructions: `Login ended: ${status}. Report this outcome; do not start another login automatically or submit generation. Existing saved credentials were not automatically removed.`,
-      }) };
+      }),
+      ...(attempt.credentialError ? { credential_error: attempt.credentialError,
+        instructions: 'Credential storage needs attention. Explain credential_error.message and wait for the user to resolve the system prompt. Do not claim login succeeded or reopen the website automatically. If the session is still waiting, retry the connection confirmation in the existing page after resolving the store issue; if terminal, check login:status before starting another connection.' } : {}) };
   }
 
   async start(): Promise<object> {
@@ -74,16 +79,26 @@ export class LoginFlow {
     let released = false;
     const release = () => { if (!released) { released = true; unlock(); } };
     let session: LocalAuthSession | undefined;
+    let credentialError: LoginAttempt['credentialError'];
     try {
       session = await (this.dependencies.createSession ?? createLocalAuthSession)({
         environment: auth.environment, webOrigin: auth.webOrigin,
-        verifyAccount: (token, signal) => verifyAccountToken(auth, token, signal),
-        saveCredential: (account, token, assertCanCommit) => saveCredential(auth.environment, account, token, assertCanCommit),
+        verifyAccount: (token, signal) => verifyAccountToken({ ...auth, clientSource: this.config.clientSource }, token, signal),
+        saveCredential: async (account, token, assertCanCommit) => {
+          credentialError = undefined;
+          try { await saveCredential(auth.environment, account, token, assertCanCommit, this.dependencies.credentialStore); }
+          catch (error) {
+            credentialError = error instanceof TopMediaiError ? { code: error.code, message: error.message }
+              : { code: 'CREDENTIAL_COMMIT_UNKNOWN', message: 'Credential storage could not be confirmed. Check login:status before connecting again.' };
+            throw error;
+          }
+        },
       });
       const expiresAt = Number(new URLSearchParams(new URL(session.authorizationUrl).hash.slice(1)).get('expires_at'));
       const attempt: LoginAttempt = { id: randomUUID(), session,
         expiresAt: new Date(expiresAt * 1000).toISOString(),
-        finished: session.completion, cleanup: Promise.resolve() };
+        finished: session.completion, cleanup: Promise.resolve(),
+        get credentialError() { return credentialError; } };
       attempt.finished = session.completion.then(result => { attempt.result = result; return result; });
       attempt.cleanup = attempt.finished.then(() => session!.close()).finally(release);
       // Cleanup stays observable to a subsequent start, without an unhandled rejection.

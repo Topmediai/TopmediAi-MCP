@@ -2,6 +2,7 @@ import type { Config } from '../config.js';
 import { TopMediaiError } from '../types.js';
 import { readJson } from './json.js';
 import { backendResponseError, transportError } from './errors.js';
+import { businessFetch } from './http.js';
 
 export function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new TopMediaiError('INVALID_RESPONSE', 'The backend response shape is invalid.');
@@ -37,10 +38,10 @@ export class BusinessTransport {
     const timing = () => ({ http_status: httpStatus, timeout_ms: timeoutMs, elapsed_ms: Math.round(performance.now() - started) });
     try {
       // No automatic retry, redirect, token refresh, cookie or supplier fallback.
-      const response = await fetch(url, {
+      const response = await businessFetch(this.config, url, {
         method: options.method ?? (options.body !== undefined || form || options.multipart ? 'POST' : 'GET'),
         redirect: 'error', credentials: 'omit', cache: 'no-store',
-        headers: { Accept: 'application/json', source: String(this.config.source),
+        headers: { Accept: 'application/json',
           ...(options.speech ? { 'Web-Req': '1', 'X-Requested-With': 'TTS' } : {}),
           ...(this.auth === 'bearer' ? { Authorization: `Bearer ${this.config.token}` } : { token: this.config.token }),
           ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded' } : options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),

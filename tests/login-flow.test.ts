@@ -15,13 +15,14 @@ import { createLocalAuthSession, type LocalAuthOptions } from '../src/local-auth
 import { LoginFlow, type LoginFlowDependencies } from '../src/login-flow.js';
 import { encryptHandoffPayload, handoffProof, type AuthContext, type HandoffPayload } from '../src/auth-protocol.js';
 import { readCredential, saveCredential, acquireLoginLock } from '../src/credentials.js';
+import { MemoryCredentialStore } from './fixtures/credential-store.js';
 import { TopMediaiError } from '../src/types.js';
 
 const token = 'A'.repeat(42);
 const account = { memberId: '101', email: 'user@example.test', emailMasked: 'u***@example.test' };
 const webOrigin = 'https://web.fixture.invalid';
 
-async function fixture(t: TestContext, options: { browserFails?: boolean; expires?: boolean; privateFiles?: boolean; production?: boolean } = {}) {
+async function fixture(t: TestContext, options: { browserFails?: boolean; expires?: boolean; privateFiles?: boolean; production?: boolean; storeFailure?: boolean } = {}) {
   const parent = tmpdir(), root = await mkdtemp(join(parent, 'topmediai-login-flow-'));
   const cleanupDirectory = async () => {
     const rel = relative(parent, root); assert.ok(rel.startsWith('topmediai-login-flow-') && !rel.startsWith('..') && !isAbsolute(rel));
@@ -34,13 +35,16 @@ async function fixture(t: TestContext, options: { browserFails?: boolean; expire
   let saved = false, corrupt = false, locked = false, browserUrl = '', clock = 0;
   const calls = { browser: 0, verify: 0, save: 0, unlock: 0, balance: 0 };
   const privateDirectory = join(root, 'credentials');
+  const credentialStore = new MemoryCredentialStore();
   const reload = createRuntimeConfigLoader(env, environment => {
     if (corrupt) throw new TopMediaiError('CREDENTIAL_CORRUPT', 'The saved credential is corrupt.');
-    if (options.privateFiles) return readCredential(environment, privateDirectory);
+    if (options.privateFiles) return readCredential(environment, credentialStore);
     return saved ? { format_version: 1, environment, token, member_id: account.memberId,
       email_masked: account.emailMasked, obtained_at: new Date().toISOString(), token_expires_at: null } : null;
   });
+  if (options.storeFailure) credentialStore.write = async () => { throw new TopMediaiError('CREDENTIAL_STORE_DENIED', 'Allow access to your system credential store, then retry.'); };
   const dependencies: LoginFlowDependencies = {
+    credentialStore,
     launchEnvironment: env,
     acquireLock: environment => {
       assert.equal(locked, false); locked = true;
@@ -51,7 +55,8 @@ async function fixture(t: TestContext, options: { browserFails?: boolean; expire
       ...(options.expires ? { authorizationTimeoutMs: 2000, now: () => clock } : {}),
       verifyAccount: async () => { calls.verify++; return account; },
       saveCredential: async (verified, value, assertCanCommit) => {
-        if (options.privateFiles) await saveCredential(auth.environment, verified, value, assertCanCommit, privateDirectory);
+        if (options.storeFailure) await auth.saveCredential(verified, value, assertCanCommit);
+        else if (options.privateFiles) await saveCredential(auth.environment, verified, value, assertCanCommit, credentialStore);
         else assertCanCommit();
         saved = true; corrupt = false; calls.save++;
       },
@@ -117,7 +122,7 @@ for (const production of [false, true]) test(`${production ? 'production' : 'pro
   assert.deepEqual(finished.account, { email_masked: account.emailMasked });
   // The wait result must not close the browser ACK retry window.
   assert.deepEqual((await f.post(packet)).body, receipt.body);
-  assert.equal((await f.call('get_service_status')).credential_source, 'local-file');
+  assert.equal((await f.call('get_service_status')).credential_source, 'system-store');
   assert.equal((await f.call('get_balance')).credits, 88);
   const output = JSON.stringify({ started, finished, status });
   const secret = new URLSearchParams(new URL(f.getBrowserUrl()).hash.slice(1)).get('secret')!;
@@ -227,7 +232,7 @@ test('real stdio disconnection cleans a waiting login lock before the host termi
     globalThis.fetch = () => { throw new Error('Live network forbidden'); };`;
   const client = new Client({ name: 'stdio-login-cleanup-test', version: '1' });
   const transport = new StdioClientTransport({ command: process.execPath,
-    args: ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, resolve(ROOT, 'dist/src/index.js')],
+    args: ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, resolve(ROOT, 'dist/tests/fixtures/stdio-credentials.js')],
     env: { ...Object.fromEntries(Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined)),
       TOPMEDIAI_TOKEN: '', TOPMEDIAI_ENV: 'production', TOPMEDIAI_MODE: 'live', TOPMEDIAI_DATA_DIR: join(root, 'state'),
       TOPMEDIAI_PRODUCTION_WEB_ORIGIN: webOrigin, TOPMEDIAI_MEMBER_HOST: 'https://member.fixture.invalid',
@@ -245,4 +250,19 @@ test('real stdio disconnection cleans a waiting login lock before the host termi
     : join(root, '.local', 'share', 'topmediai', 'credentials', 'production.login.lock');
   assert.equal(existsSync(lock), true);
   await client.close(); assert.equal(existsSync(lock), false);
+});
+
+
+test('login wait exposes actionable system-store failure without claiming saved or reopening the website', async t => {
+  const f = await fixture(t, { storeFailure: true });
+  const started = await f.call('start_login');
+  const response = await f.post();
+  assert.equal(response.status, 503);
+  const finished = await f.call('wait_for_login', { login_id: started.login_id, wait_seconds: 1 });
+  assert.equal(finished.status, 'aborted');
+  assert.equal(finished.credential_error.code, 'CREDENTIAL_STORE_DENIED');
+  assert.match(finished.credential_error.message, /system credential store/);
+  assert.equal(finished.continue_original_request, false);
+  assert.ok(!JSON.stringify(finished).includes(token));
+  assert.equal(f.calls.browser, 1); assert.equal(f.calls.balance, 0);
 });

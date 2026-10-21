@@ -7,6 +7,7 @@ import { readCredential, readCredentialAsync, type Credential } from './credenti
 import type { Environment } from './auth-protocol.js';
 import { defaultUploadPublicOrigin } from './upload-config.js';
 import { DEFAULT_ENVIRONMENT, PRODUCTION_DEFAULTS } from './environment.js';
+import { parseClientSource, type McpClientSource } from './client-source.js';
 
 export const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 export interface Config {
@@ -16,10 +17,11 @@ export interface Config {
   memberHost: string;
   imageHost: string;
   source: number;
+  clientSource?: McpClientSource;
   dataDir: string;
   timeoutMs: number;
   gatewayHost?: string;
-  credentialSource?: 'environment' | 'local-file' | 'none';
+  credentialSource?: 'environment' | 'system-store' | 'none';
   uploadHost?: string;
   uploadRoot?: string;
   uploadPublicOrigin?: string;
@@ -78,6 +80,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, credentialLoade
   const imageHost = gatewayHost ?? directHost(env, 'TOPMEDIAI_IMAGE_HOST');
   const source = Number(env.TOPMEDIAI_SOURCE ?? 4);
   if (![1, 2, 3, 4].includes(source)) throw new TopMediaiError('INVALID_CONFIG', 'TOPMEDIAI_SOURCE must be an existing backend channel (1–4).');
+  const clientSource = parseClientSource(env.MCP_CLIENT_SOURCE);
   const uploadHost = !gatewayHost ? directHost(env, 'TOPMEDIAI_UPLOAD_HOST') : undefined;
   const uploadPublicOrigin = host(env.TOPMEDIAI_UPLOAD_PUBLIC_ORIGIN || defaultUploadPublicOrigin(environment));
   if (!uploadPublicOrigin.startsWith('https://')) throw new TopMediaiError('INVALID_CONFIG', 'Uploaded image URLs must use an approved HTTPS origin.');
@@ -96,10 +99,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env, credentialLoade
   const audioTimeoutMs = Number(env.TOPMEDIAI_AUDIO_TIMEOUT_MS || 300000);
   if (!Number.isInteger(audioTimeoutMs) || audioTimeoutMs < 1000 || audioTimeoutMs > 300000) throw new TopMediaiError('INVALID_CONFIG', 'Audio timeout must be between 1000 and 300000 milliseconds.');
   return {
-    mode, environment, token, memberHost, imageHost, source, gatewayHost,
+    mode, environment, token, memberHost, imageHost, source, clientSource, gatewayHost,
     uploadHost, uploadRoot, uploadPublicOrigin, ffmpegPath, ffprobePath,
     musicHost, ttsHost, audioTimeoutMs,
-    credentialSource: explicitToken ? 'environment' : credential ? 'local-file' : 'none',
+    credentialSource: explicitToken ? 'environment' : credential ? 'system-store' : 'none',
     dataDir: resolve(env.TOPMEDIAI_DATA_DIR ?? resolve(ROOT, '.data'), `${environment}-${identity}`),
     timeoutMs: 60_000,
   };
@@ -116,8 +119,8 @@ export function createAsyncRuntimeConfigLoader(env: NodeJS.ProcessEnv = process.
   credentialLoader: (environment: Environment) => Credential | null | Promise<Credential | null> = readCredentialAsync): () => Promise<Config> {
   const launchEnvironment = Object.freeze({ ...env });
   return async () => {
-    // Validate public settings before reading private files. Explicit token
-    // overrides continue to bypass local credentials exactly as before.
+    // Validate public settings before reading the system credential store. Explicit token
+    // overrides continue to bypass stored credentials exactly as before.
     const base = loadConfig(launchEnvironment, () => null);
     if (base.credentialSource === 'environment') return base;
     const credential = await credentialLoader(base.environment);

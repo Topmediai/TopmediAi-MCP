@@ -8,7 +8,7 @@ La génération utilise les droits du compte connecté. Consultez les modèles e
 
 ## Installation et connexion
 
-Prérequis : Node.js >= 22.18, Codex CLI et accès à la page officielle de connexion. L’authentification par navigateur prend actuellement en charge un navigateur et un serveur MCP sur le même ordinateur Windows. Utilisez `npm.cmd` dans PowerShell ; les autres shells compatibles peuvent utiliser `npm`.
+Prérequis : Node.js >= 22.18 et accès à la page officielle de connexion. Seul l’installateur Codex nécessite Codex CLI ; celui de Cursor non. Navigateur et MCP doivent fonctionner sur le même ordinateur. Utilisez `npm.cmd` dans PowerShell ou `npm` dans les autres shells compatibles.
 
 Dans le répertoire du projet :
 
@@ -17,6 +17,8 @@ npm.cmd ci
 npm.cmd test
 npm.cmd run install:codex
 ```
+
+Pour Cursor, installez les dépendances puis lancez `npm.cmd run install:cursor`. Ajoutez `-- --project ./my-project` pour une installation limitée à ce projet. Voir le [guide Cursor (anglais)](../cursor.md).
 
 Le plugin apparaît sous `TopMediAi-MCP`, avec l’identifiant `topmediai-mcp@topmediai-local`. L’installation crée `plugin/.mcp.json` localement sans y stocker de jeton ni de cookie. Ce fichier contient des chemins d’exécutables locaux : ne le versionnez pas et ne le distribuez pas. Réinstallez après avoir déplacé le projet ou changé d’ordinateur.
 
@@ -41,7 +43,9 @@ L’installateur public, le serveur et la CLI prennent en charge **uniquement la
 - Les API directes sont utilisées par défaut. Les adresses doivent être des origines HTTPS valides ; les valeurs obligatoires explicitement vides sont refusées. L’ancienne passerelle, limitée, nécessite `TOPMEDIAI_PRODUCTION_GATEWAY_HOST` explicite.
 - L’installation lit la configuration du shell et fixe les adresses, l’environnement et les réglages d’envoi. Définissez les substitutions avant l’installation. Les commentaires de l’exemple expliquent le démarrage direct et la CLI de connexion.
 - Les installations normales utilisent les identifiants privés enregistrés. `TOPMEDIAI_TOKEN` est une substitution explicite qui ne doit figurer dans aucun fichier public, capture ou rapport. L’installation standard efface cette substitution pour éviter d’anciens identifiants.
-- Sous Windows, les identifiants sont enregistrés dans `%LOCALAPPDATA%\TopMediai\credentials\` et revérifiés avant chaque appel. Un changement de compte sélectionne son répertoire de tâches ; les requêtes en cours gardent leur compte initial.
+- Les identifiants sont stockés dans Windows Credential Manager, macOS Keychain ou Linux Secret Service et relus avant chaque appel. Un identifiant enregistré chargé indique `credential_source=system-store` ; `credential_storage` nomme le service. Le changement de compte sélectionne son répertoire de tâches ; les requêtes en cours conservent leurs identifiants initiaux.
+- **Reconnectez le compte après la migration depuis le stockage JSON.** Les anciens fichiers JSON ne sont ni lus, ni migrés, ni supprimés automatiquement. Leur ancien répertoire sert uniquement aux métadonnées de verrouillage de connexion ; gérez séparément les anciens fichiers secrets sans les publier. Linux nécessite D-Bus de bureau et Secret Service. Aucun repli en texte clair n’existe si le service est verrouillé, refusé ou indisponible. Saisissez les mots de passe uniquement dans les dialogues système.
+- Le stockage, la lecture et la suppression Windows ont été testés isolément ; les parcours clients complets macOS/Linux restent à valider. Codex/Cursor sous le même utilisateur OS partagent les identifiants de production : déconnexion ou changement de compte affecte les prochains appels des deux clients. Ce stockage n’isole pas tous les processus du même utilisateur.
 - Aucun interrupteur supplémentaire n’est nécessaire pour générer ou envoyer des fichiers. Les envois exigent toujours l’autorisation pour les fichiers précis et un répertoire dédié. Après modification des adresses, réglages ou du code, actualisez configuration et paquet, puis reconnectez le MCP.
 - La déconnexion locale supprime les identifiants enregistrés sans déconnecter le site, révoquer les jetons serveur ni annuler les tâches soumises.
 
@@ -50,6 +54,10 @@ npm.cmd run setup:plugin
 ```
 
 Après mise à jour, vérifiez `get_service_status.server_version`. Ne supposez pas qu’un redémarrage complet est nécessaire.
+
+Configurez `MCP_CLIENT_SOURCE` par lancement : Codex `5`, Claude Code `6`, Cursor `7`, aucun en-tête si inconnu. Les installateurs fixent leur valeur ; le canal `TOPMEDIAI_SOURCE` du corps reste inchangé. Actualisez la configuration et reconnectez après une mise à jour. Voir [Identité du client (anglais)](../client-source.md).
+
+Les opérations vidéo avec un interrupteur audio activent le son par défaut si `generate_audio` est omis. Utilisez `false` pour une demande explicite de vidéo muette. Les modèles sans interrupteur conservent le comportement du fournisseur ; les modèles à audio imposé ne peuvent être muets. Catalogue, devis et envoi doivent correspondre ; demandez un nouveau devis après modification.
 
 ## Outils et création
 

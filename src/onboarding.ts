@@ -18,7 +18,7 @@ export function loginGuidance(config: Config, credentialRefreshEnabled: boolean)
     instructions: overridden
       ? 'A development TOPMEDIAI_TOKEN override takes precedence. Remove it from the launch configuration and reconnect this MCP server, then sign in through the official website.'
       : credentialRefreshEnabled
-        ? 'Call start_login to open the official login page, then keep this turn active and call wait_for_login with its login_id until saved or a terminal outcome. waiting means wait again on the same attempt, not finish the reply. After saved, call get_service_status and get_balance and resume the original request with existing inputs and authorization. Do not ask the user to say continue or restart Codex/MCP. If the login tools are unavailable, run the local login command and keep polling its process until it exits; opening the browser alone is not completion.'
+        ? 'Call start_login to open the official login page, then keep this turn active and call wait_for_login with its login_id until saved or a terminal outcome. waiting means wait again on the same attempt, not finish the reply. After saved, call get_service_status and get_balance and resume the original request with existing inputs and authorization. Do not ask the user to say continue or restart the host application or MCP. If the login tools are unavailable, run the local login command and keep polling its process until it exits; opening the browser alone is not completion.'
         : 'Complete login and confirm the account on the official website. This fixed-config embedding must reload its configuration before using the new credential.',
   };
 }

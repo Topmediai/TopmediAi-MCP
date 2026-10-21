@@ -10,7 +10,8 @@ const exactPaths = new Set(['.gitignore', '.env.example', '.agents/plugins/marke
   'LICENSE', 'LICENSE.md', 'SECURITY.md', 'CONTRIBUTING.md', 'CHANGELOG.md',
   'README.md', 'package.json', 'package-lock.json', 'tsconfig.json', 'public-content.config.json',
   'docs/privacy.md', 'docs/production-switch.md', 'docs/releasing.md', 'docs/speech-integration.md', 'docs/image-to-image-security.md',
-  'plugin/.codex-plugin/plugin.json', 'plugin/assets/topmediai-icon.png',
+  'docs/client-source.md', 'docs/cursor.md',
+  'plugin/.cursor-plugin/plugin.json', 'plugin/.codex-plugin/plugin.json', 'plugin/assets/topmediai-icon.png',
   '.github/workflows/public-content.yml']);
 export function isPublicPath(path, build = false) {
   if (path.includes('\\') || isAbsolute(path) || path.split('/').some(part => part === '..' || part === '.')) return false;

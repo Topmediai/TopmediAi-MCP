@@ -4,6 +4,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, relative, resolve } from 'node:path';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { WEB_MODELS } from '../src/catalog/models.js';
 import { loadConfig } from '../src/config.js';
 import { ImageService } from '../src/service.js';
@@ -14,6 +16,7 @@ import { imageSchema } from '../src/image-options.js';
 import { REFERENCE_PREFIX } from '../src/reference-url.js';
 import { Store } from '../src/store.js';
 import { TopMediaiError, type ReferenceImage } from '../src/types.js';
+import { createServer } from '../src/server.js';
 
 const code = (expected: string) => (error: unknown) => error instanceof TopMediaiError && error.code === expected;
 const id = randomUUID();
@@ -24,7 +27,7 @@ async function fixture(t: TestContext) {
   const cfg = loadConfig({ TOPMEDIAI_ENV: 'production', TOPMEDIAI_TOKEN: 'A'.repeat(42), TOPMEDIAI_DATA_DIR: dir,
     TOPMEDIAI_IMAGE_HOST: 'https://image.fixture.invalid', TOPMEDIAI_MUSIC_HOST: 'https://music.fixture.invalid', TOPMEDIAI_TTS_HOST: 'https://video.fixture.invalid' }, () => null);
   const calls: { path: string; body: any }[] = [];
-  const state = { failCatalog: false, failQuote: false, effective: {} as Record<string, unknown>, rows: true, invalidPrice: false };
+  const state = { failCatalog: false, failQuote: false, effective: {} as Record<string, unknown>, rows: true, invalidPrice: false, catalogAudio: -1 };
   t.mock.method(globalThis, 'fetch', async (raw: string | URL | Request, init?: RequestInit) => {
     const url = new URL(raw instanceof Request ? raw.url : raw);
     assert.ok([cfg.imageHost, cfg.musicHost, cfg.ttsHost].includes(url.origin), 'No live endpoints allowed');
@@ -42,7 +45,7 @@ async function fixture(t: TestContext) {
     else if (url.pathname === '/v2/music/generation-prices') data = { current_price_version: 'pricing_B', price_versions: [{ price_version: 'pricing_B', new_pricing_rules: { model_unit_credits: { default: 2 } } }] };
     else if (url.pathname === '/v2/music/generation-price') data = { price_version: 'pricing_B', legacy_credits_cost: 7, new_credits_cost: 70, scheme: 1 };
     else if (url.pathname === '/v2/async/text-to-song') data = { song_ids: ['song-1', 'song-2'] };
-    else if (url.pathname === '/ai_video/price/model_cost') data = { models: state.rows ? [{ model_type: 30, pricing: [{ duration: 52, mode: 64, task_type: 1, real_duration: -1, generate_audio_switch: -1, multiple_shot: 0, consume: state.invalidPrice ? 'invalid' : 0.36, points: null, version: 'v1' }] }] : [] };
+    else if (url.pathname === '/ai_video/price/model_cost') data = { models: state.rows ? [{ model_type: 30, pricing: [{ duration: 52, mode: 64, task_type: 1, real_duration: -1, generate_audio_switch: state.catalogAudio, multiple_shot: 0, consume: state.invalidPrice ? 'invalid' : 0.36, points: null, version: 'v1' }] }] : [] };
     else if (url.pathname === '/ai_video/price/preview') data = { ...body, real_duration: -1, consume: 0.36, version: 'v1', price_rule_id: 71 };
     else if (url.pathname === '/ai_video/consume_preview') data = { ...body, consume: Math.round(body.real_duration * 36) / 100, points: body.real_duration, ...state.effective };
     else if (url.pathname === '/ai_video/generation') data = { task_id: '9001' };
@@ -143,6 +146,94 @@ test('every current video operation has a valid schema path using backend durati
     { ...seedance, model_type: 36, duration: 48 }, { ...seedance, model_type: 2, duration: 8, real_duration: 8, mode: 5, first_reference_image_id: id, end_reference_image_id: randomUUID() },
     { ...seedance, model_type: 35, duration: 56, real_duration: 5, mode: 74 }, { ...seedance, model_type: 14, duration: 22, real_duration: 5, mode: 28, first_reference_image_id: id },
     { content: 'A landscape', model_type: 5, duration: 3, mode: 7 }, { content: 'A landscape', model_type: 18, duration: 43, mode: 45 }]) assert.equal(videoSchema.safeParse(invalid).success, false);
+});
+
+test('video sound defaults and explicit choices respect every current model operation', async t => {
+  const f = await fixture(t), adapter = new VideoAdapter(f.cfg);
+  for (const model of WEB_MODELS.videos) for (const [operation, c] of Object.entries(model.operations)) {
+    const params = c.durations.flatMap(d => c.modes.map(m => ({ content: 'A kitten dances', model_type: model.id, duration: model.duration_protocol ?? d.value,
+      real_duration: d.seconds, mode: m.value, aspect_ratio: c.aspect_ratios[0]?.value ?? 1,
+      ...(operation === 'image_to_video' ? { first_reference_image_id: id } : operation === 'reference_to_video' ? { reference_images: [{ reference_image_id: id }] } : {}) })))
+      .find(candidate => videoSchema.safeParse(candidate).success);
+    assert.ok(params, `${model.name}/${operation}`);
+    const hasSwitch = c.request_params.includes('generate_audio_switch'), audioOn = !!model.forced_audio || hasSwitch;
+    assert.equal(adapter.validate(params).generate_audio, audioOn ? true : undefined, `${model.name}/${operation} default`);
+    assert.equal(videoSchema.safeParse({ ...params, generate_audio: false }).success, !model.forced_audio, `${model.name}/${operation} mute`);
+    assert.equal(videoSchema.safeParse({ ...params, generate_audio: true }).success, audioOn, `${model.name}/${operation} audio`);
+    if (!model.forced_audio) assert.equal(adapter.validate({ ...params, generate_audio: false }).generate_audio, false);
+  }
+  assert.equal(f.calls.length, 0);
+});
+
+test('video catalogs price default audio on, explicit mute off and preserve provider-controlled models', async t => {
+  const f = await fixture(t), adapter = new VideoAdapter(f.cfg);
+  f.state.catalogAudio = 1;
+  const defaults = await adapter.models(), pixverse = defaults.models.find(model => model.model_type === 30)!;
+  assert.equal(pixverse.generate_audio, true); assert.equal(pixverse.capabilities.default_generate_audio, true);
+  assert.equal(pixverse.pricing.length, 1); assert.equal(pixverse.pricing[0]?.generate_audio, true);
+  const pro = defaults.models.find(model => model.model_type === 21)!;
+  assert.equal(pro.generate_audio, false); assert.equal(pro.requested_audio_supported, true);
+  assert.equal(pro.capabilities.audio, 'provider_default'); assert.equal(pro.capabilities.default_generate_audio, undefined);
+  const grok = defaults.models.find(model => model.model_type === 28)!;
+  assert.equal(grok.generate_audio, true); assert.equal(grok.capabilities.audio, 'always_on');
+  const muted = await adapter.models('text_to_video', false);
+  assert.equal(muted.models.find(model => model.model_type === 30)?.pricing.length, 0, 'Silent catalogs must not use audio-on prices');
+  assert.equal(muted.models.find(model => model.model_type === 28)?.requested_audio_supported, false);
+  f.state.catalogAudio = 0;
+  const silent = (await adapter.models('text_to_video', false)).models.find(model => model.model_type === 30)!;
+  assert.equal(silent.generate_audio, false); assert.equal(silent.pricing[0]?.generate_audio, false);
+  assert.equal((await adapter.models()).models.find(model => model.model_type === 30)?.pricing.length, 0, 'Default audio-on catalogs must not use silent prices');
+  const requested = await adapter.models('text_to_video', true);
+  assert.equal(requested.models.find(model => model.model_type === 21)?.requested_audio_supported, false);
+});
+
+test('MCP video catalog, quote and durable submission agree on default-on and explicit sound choices', async t => {
+  const f = await fixture(t), server = createServer(f.cfg), client = new Client({ name: 'video-audio-default-test', version: '1' });
+  const [a, b] = InMemoryTransport.createLinkedPair(); await server.connect(b); await client.connect(a);
+  t.after(async () => { await client.close(); await server.close(); });
+  const call = async (name: string, args: Record<string, unknown>) => {
+    const result = await client.callTool({ name, arguments: args });
+    assert.equal(result.isError, undefined, JSON.stringify(result.content));
+    return result.structuredContent as any;
+  };
+  for (const [index, choice] of [undefined, false, true].entries()) {
+    const audioParams = choice === undefined ? {} : { generate_audio: choice }, expected = choice ?? true;
+    const catalog = await call('list_video_models', audioParams);
+    assert.equal(catalog.models.find((model: any) => model.model_type === 30).generate_audio, expected);
+    const quote = await call('estimate_video_cost', { content: 'A kitten dances', model_type: 30, duration: 52, real_duration: 7, mode: 64, ...audioParams });
+    assert.equal(quote.params.generate_audio, expected);
+    await call('generate_video', { quote_id: quote.quote_id, request_id: `audio-${index}`, budget: { video_units: 2.52, credits: 7 } });
+    assert.equal(f.calls.filter(call => call.path === '/ai_video/generation').at(-1)!.body.generate_audio_switch, expected ? '1' : '0');
+    assert.equal(f.calls.filter(call => call.path === '/ai_video/consume_preview').at(-1)!.body.generate_audio_switch, Number(expected));
+    await new GenerationService(f.cfg).generate('video', quote.quote_id, `audio-${index}`, {});
+    assert.equal(f.calls.filter(call => call.path === '/ai_video/generation').length, index + 1);
+  }
+});
+
+test('video audio mismatches and legacy silent quotes cannot silently submit with the new default', async t => {
+  const f = await fixture(t), params = { content: 'A kitten dances', model_type: 30, duration: 52, real_duration: 7, mode: 64 };
+  f.state.effective = { generate_audio_switch: 0 };
+  await assert.rejects(f.generation.estimate('video', params), code('PRICE_UNAVAILABLE'));
+  f.state.effective = {};
+  const silent = await f.generation.estimate('video', { ...params, generate_audio: false });
+  await f.generation.store.transaction(async state => { delete state.generation_quotes![silent.quote_id]!.params.generate_audio; await f.generation.store.save(state); });
+  await assert.rejects(new GenerationService(f.cfg).generate('video', silent.quote_id, 'legacy-silent', { video_units: 2.52, credits: 7 }), code('PRICE_CHANGED'));
+  assert.ok(!f.calls.some(call => call.path === '/ai_video/generation'));
+});
+
+test('first-frame and first/last-frame quotes retain default-on and explicit mute after restart', async t => {
+  const f = await fixture(t), images = await saveImages(new Store(f.cfg.dataDir), 2), adapter = new VideoAdapter(f.cfg);
+  for (const endFrame of [false, true]) for (const mute of [false, true]) {
+    const operation = endFrame ? 'image_to_video_start_end' : 'image_to_video', audio = !mute;
+    const catalog = await adapter.models(operation, mute ? false : undefined);
+    assert.equal(catalog.models.find(model => model.model_type === 30)?.generate_audio, audio);
+    const quote = await f.generation.estimate('video', { content: 'A kitten dances', model_type: 30, duration: 52, real_duration: 7, mode: 64,
+      first_reference_image_id: images[0]!.reference_image_id, ...(endFrame ? { end_reference_image_id: images[1]!.reference_image_id } : {}),
+      ...(mute ? { generate_audio: false } : {}) });
+    assert.equal(quote.params.generate_audio, audio); assert.equal(quote.operation, operation);
+    await new GenerationService(f.cfg).generate('video', quote.quote_id, `frame-audio-${Number(endFrame)}-${Number(mute)}`, { video_units: 2.52, credits: 7 });
+    assert.equal(f.calls.filter(call => call.path === '/ai_video/generation').at(-1)!.body.generate_audio_switch, audio ? '1' : '0');
+  }
 });
 
 test('missing price rows and failed price services never hide configured models', async t => {

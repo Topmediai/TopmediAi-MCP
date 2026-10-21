@@ -9,6 +9,6 @@
     "composerIcon": "./assets/topmediai-icon.png",
     "logo": "./assets/topmediai-icon.png",
     "shortDescription": "AI image, music, video, and speech generation",
-    "longDescription": "Create images, music, videos, and speech with TopMediai in Codex. Supports text-to-image, image-to-image, text-to-video, image-to-video, mixed-media reference video, text-to-speech (TTS), and speech-to-speech (STS). Explore model and voice catalogs, estimate costs, check account entitlements and task status, and preview images, audio, and videos. Sign in through the official website to use your account entitlements. Reference uploads require separate authorization and a dedicated local media directory; uploaded media URLs may be publicly accessible."
+    "longDescription": "Create images, music, videos, and speech with TopMediai in Codex or Cursor. Supports text-to-image, image-to-image, text-to-video, image-to-video, mixed-media reference video, text-to-speech (TTS), and speech-to-speech (STS). Explore model and voice catalogs, estimate costs, check account entitlements and task status, and preview images, audio, and videos. Sign in through the official website to use your account entitlements. Reference uploads require separate authorization and a dedicated local media directory; uploaded media URLs may be publicly accessible."
   }
 }

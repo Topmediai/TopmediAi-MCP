@@ -6,6 +6,7 @@ import { createLocalAuthSession } from '../src/local-auth.js';
 import type { Environment } from '../src/auth-protocol.js';
 import { TopMediaiError } from '../src/types.js';
 import { parseEnvironmentArguments } from '../src/environment.js';
+import { parseClientSource } from '../src/client-source.js';
 
 function parseArguments(): { environment: Environment; showPrivateLink: boolean } {
   const args = process.argv.slice(2);
@@ -18,13 +19,20 @@ function parseArguments(): { environment: Environment; showPrivateLink: boolean 
 async function main(): Promise<void> {
   const args = parseArguments(); loadLocalEnv();
   const config = loadAuthConfig(args.environment);
+  const clientSource = parseClientSource(process.env.MCP_CLIENT_SOURCE);
   const release = acquireLoginLock(args.environment);
   let session: Awaited<ReturnType<typeof createLocalAuthSession>> | undefined;
   const interrupt = () => { void session?.cancel(); };
   try {
     session = await createLocalAuthSession({ environment: config.environment, webOrigin: config.webOrigin,
-      verifyAccount: (token, signal) => verifyAccountToken({ memberOrigin: config.memberOrigin, environment: config.environment, legacyProductionGateway: config.legacyProductionGateway }, token, signal),
-      saveCredential: (account, token, assertCanCommit) => saveCredential(config.environment, account, token, assertCanCommit),
+      verifyAccount: (token, signal) => verifyAccountToken({ memberOrigin: config.memberOrigin, environment: config.environment, legacyProductionGateway: config.legacyProductionGateway, clientSource }, token, signal),
+      saveCredential: async (account, token, assertCanCommit) => {
+        try { await saveCredential(config.environment, account, token, assertCanCommit); }
+        catch (error) {
+          console.error(error instanceof TopMediaiError ? `${error.code}: ${error.message}` : 'CREDENTIAL_COMMIT_UNKNOWN: Check login:status before connecting again.');
+          throw error;
+        }
+      },
     });
     process.on('SIGINT', interrupt); process.on('SIGTERM', interrupt);
     console.log(`Opening the official ${config.environment} connection page. Confirm the account in the browser. Waiting up to 10 minutes.`);

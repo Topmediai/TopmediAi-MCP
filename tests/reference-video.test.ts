@@ -91,6 +91,7 @@ test('production MCP multi-image reference flow preserves roles, order, prompt t
   const submitted = f.calls.find(c => c.path === '/ai_video/generation')!.body;
   assert.deepEqual(submitted.fusion_imgs, [{ type: 'subject', img_url: first.url, ref_name: 'Image1' }, { type: 'background', img_url: second.url, ref_name: 'Image2' }]);
   assert.equal(submitted.real_duration, 5); assert.equal(submitted.duration, 52); assert.equal(submitted.aspect_ratio, 1);
+  assert.equal(quote.params.generate_audio, true); assert.equal(submitted.generate_audio_switch, '1');
   assert.equal(submitted.reference_images, undefined); assert.equal(submitted.first_image_url, undefined);
   assert.equal((await call('get_generation_task', { task_handle: task.task_handle })).status, 'completed');
 });
@@ -111,7 +112,7 @@ test('production media upload verifies MP4/WAV, strips metadata and uses random 
 test('mixed image/video/audio reference quote uses backend floor duration and exact asset snapshot', async t => {
   const f = await fixture(t), files = await mediaFiles(f.root), image = await f.images.uploadReferenceImage(f.file);
   const video = await f.media.upload(files.video, 'video'), audio = await f.media.upload(files.audio, 'audio');
-  const params = { ...omni, generate_audio: true, reference_images: [{ reference_image_id: image.reference_image_id }], reference_video_ids: [video.reference_media_id], reference_audio_ids: [audio.reference_media_id] };
+  const params = { ...omni, reference_images: [{ reference_image_id: image.reference_image_id }], reference_video_ids: [video.reference_media_id], reference_audio_ids: [audio.reference_media_id] };
   const quote = await f.service.estimate('video', params);
   assert.equal(quote.operation, 'omni_reference_to_video');
   const preview = f.calls.find(c => c.path === '/ai_video/price/preview')!.body;

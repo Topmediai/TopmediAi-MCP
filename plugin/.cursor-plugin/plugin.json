@@ -1,0 +1,9 @@
+{
+  "name": "topmediai-mcp",
+  "version": "1.0.0",
+  "description": "TopMediai image, music, video and synchronous TTS/STS generation with browser login, cost estimates and media previews.",
+  "skills": "./skills/",
+  "mcpServers": "./.cursor-mcp.json",
+  "logo": "assets/topmediai-icon.png",
+  "keywords": ["topmediai", "image", "music", "video", "speech", "mcp"]
+}

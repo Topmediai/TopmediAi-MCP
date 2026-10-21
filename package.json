@@ -4,13 +4,14 @@
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "Local Codex MCP for TopMediai image, music, video generation and synchronous TTS/STS speech",
+  "description": "Local Codex and Cursor MCP for TopMediai image, music, video generation and synchronous TTS/STS speech",
   "engines": {
     "node": ">=22.18"
   },
   "dependencies": {
     "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "1.32.1",
+    "@napi-rs/keyring": "2.1.2",
     "sharp": "0.35.5",
     "zod": "4.6.5"
   },
@@ -25,7 +26,9 @@
     "diagnose": "npm run build && node dist/scripts/diagnose.js",
     "test": "npm run build && node --test --test-concurrency=4 dist/tests/*.test.js tests/*.test.mjs",
     "setup:plugin": "npm run build && node dist/scripts/setup-plugin.js",
+    "setup:cursor": "npm run build && node dist/scripts/setup-cursor.js",
     "install:codex": "npm run build && node dist/scripts/install-codex.js",
+    "install:cursor": "npm run build && node dist/scripts/install-cursor.js",
     "login": "npm run build && node dist/scripts/login.js",
     "logout": "npm run build && node dist/scripts/logout.js",
     "login:status": "npm run build && node dist/scripts/login-status.js",

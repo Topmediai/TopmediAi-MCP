@@ -232,6 +232,33 @@
       "category": "personal-email",
       "line_sha256": "06130cc10b0797effdce9b1937d475857fde603fd34b865a1aa31adcb85f72dd",
       "reason": "Synthetic user:pass URL used only for credential rejection; not a personal email address."
+    },
+    {
+      "file": "tests/cursor-install.test.ts",
+      "category": "credential-literal",
+      "line_sha256": "1e73f9a443568ca0d459f378e184a8f2e7b564212aaa41832274de3c92770d6d",
+      "build_line_sha256": "1e73f9a443568ca0d459f378e184a8f2e7b564212aaa41832274de3c92770d6d",
+      "reason": "Synthetic credentials verify that Cursor installation excludes account secrets and preserves unrelated user configuration; no real credentials."
+    },
+    {
+      "file": "tests/cursor-install.test.ts",
+      "category": "credential-literal",
+      "line_sha256": "cb561b6dc1dcb0e65cb295382e60eb5639ff52707f97a0361e85e00971aeba71",
+      "build_line_sha256": "cb561b6dc1dcb0e65cb295382e60eb5639ff52707f97a0361e85e00971aeba71",
+      "reason": "Synthetic credentials verify that Cursor installation excludes account secrets and preserves unrelated user configuration; no real credentials."
+    },
+    {
+      "file": "tests/cursor-install.test.ts",
+      "category": "credential-literal",
+      "line_sha256": "9835648c5f4457022f84cebf2a102976c056ee8ceecff7ff90273dab5bde1b3a",
+      "build_line_sha256": "9835648c5f4457022f84cebf2a102976c056ee8ceecff7ff90273dab5bde1b3a",
+      "reason": "Synthetic credentials verify that Cursor installation excludes account secrets and preserves unrelated user configuration; no real credentials."
+    },
+    {
+      "file": "tests/credentials.test.ts",
+      "category": "url-credentials",
+      "line_sha256": "bd7f58c057090b5a1a15cc7f4975fc3d48ae58048281993a253403dba7b4bcd5",
+      "reason": "Synthetic URL or credentials used for rejection, signed-link preservation or diagnostic redaction tests; not a live account or asset."
     }
   ],
   "public_email_domains": [

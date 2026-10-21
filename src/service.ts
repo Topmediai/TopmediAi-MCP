@@ -11,6 +11,7 @@ import { defaultUploadPublicOrigin } from './upload-config.js';
 import { balanceDisplay, isHighPriceModel, quoteDisplay, taskDisplay, validateCosts } from './display-policy.js';
 import { pollAfterSeconds, remainingPollSeconds } from './task-polling.js';
 import { requestFailure, UNKNOWN_SUBMISSION_RECOVERY } from './transport/errors.js';
+import { systemStoreName } from './credential-store.js';
 
 export class ImageService {
   readonly store: Store;
@@ -26,8 +27,10 @@ export class ImageService {
   }
   status(credentialRefreshEnabled = false) {
     return this.wrap({ service: 'topmediai-mcp', token_configured: !!this.config.token,
+      mcp_client_source: this.config.clientSource ?? null,
       member_host: this.config.memberHost, image_host: this.config.imageHost,
       credential_source: this.config.credentialSource ?? (this.config.token ? 'environment' : 'none'), gateway_configured: !!this.config.gatewayHost,
+      credential_storage: systemStoreName(),
       api_connection_mode: this.config.gatewayHost ? 'legacy_gateway' : 'direct',
       music_host: this.config.musicHost, tts_host: this.config.ttsHost,
       image_to_image_enabled: usesDirectApis(this.config),

@@ -5,6 +5,7 @@ import { readJson } from './transport/json.js';
 import { defaultUploadPublicOrigin } from './upload-config.js';
 import { WEB_MODELS, imageContract, imagePriceSupported } from './catalog/models.js';
 import { backendResponseError, transportError } from './transport/errors.js';
+import { businessFetch } from './transport/http.js';
 
 export const SUPPORTED_MODELS = WEB_MODELS.images.map(model => model.id);
 export const IMAGE_TO_IMAGE_MODELS = WEB_MODELS.images.filter(model => model.operations.image).map(model => model.id);
@@ -28,7 +29,7 @@ export class Backend {
     let httpStatus: number | undefined;
     const timing = () => ({ http_status: httpStatus, timeout_ms: this.config.timeoutMs, elapsed_ms: Math.round(performance.now() - started) });
     try {
-      const response = await fetch(new URL(path, origin), {
+      const response = await businessFetch(this.config, new URL(path, origin), {
         method: body === undefined ? 'GET' : 'POST',
         redirect: 'error',
         credentials: 'omit',

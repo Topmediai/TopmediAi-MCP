@@ -14,10 +14,14 @@ export async function checkPluginServer(launch: StdioServerParameters) {
     for (const name of ['get_service_status', 'start_login', 'wait_for_login', 'cancel_login', 'get_balance', 'review_generation_plan', 'estimate_image_cost', 'generate_image', 'estimate_tts_cost', 'generate_tts', 'estimate_sts_cost', 'generate_sts', 'upload_speech_audio']) {
       if (!tools.includes(name)) throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The installed MCP does not expose the required TopMediai generation tools.');
     }
-    const result = await client.callTool({ name: 'get_service_status', arguments: {} }, undefined, { timeout: 15_000 });
+    const result = await client.callTool({ name: 'get_service_status', arguments: {} }, undefined, { timeout: 40_000 });
     const status = result.structuredContent as Record<string, unknown> | undefined;
     if (result.isError || !status || typeof status.token_configured !== 'boolean') {
-      throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The MCP started, but its local credential status could not be checked. Check the local configuration and private credential permissions.');
+      const failure = status?.error as { code?: string } | undefined;
+      if (failure?.code?.startsWith('CREDENTIAL_')) {
+        throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The MCP started, but the system credential store could not be read. Unlock or allow access to your system keychain/keyring, and ensure Linux Secret Service is running, then retry. No plaintext fallback is used.');
+      }
+      throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The MCP started, but its local credential status could not be checked. Check the local configuration and system credential store access.');
     }
     if (launch.env?.TOPMEDIAI_ENV && status.environment !== launch.env.TOPMEDIAI_ENV) {
       throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The MCP environment does not match the selected installation environment.');
@@ -29,6 +33,6 @@ export async function checkPluginServer(launch: StdioServerParameters) {
       current_chat_tools_verified: false, backend_account_verified: false };
   } catch (error) {
     if (error instanceof TopMediaiError) throw error;
-    throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The local MCP handshake failed. Check Node, the installed entry path and credential permissions before reconnecting this plugin.');
+    throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The local MCP handshake failed. Check Node, the installed entry path and system credential store access before reconnecting this plugin.');
   } finally { await client.close(); }
 }

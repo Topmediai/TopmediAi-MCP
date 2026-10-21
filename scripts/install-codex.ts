@@ -6,7 +6,7 @@ import { checkPluginServer } from '../src/install-check.js';
 
 try {
   const environment = parsePluginEnvironment(process.argv.slice(2));
-  const configuration = await setupPlugin(environment);
+  const configuration = await setupPlugin(environment, { ...process.env, MCP_CLIENT_SOURCE: '5' });
   for (const args of [
     ['plugin', 'marketplace', 'add', ROOT, '--json'],
     ['plugin', 'add', 'topmediai-mcp@topmediai-local', '--json'],

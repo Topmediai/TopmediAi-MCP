@@ -16,6 +16,7 @@ export function pluginConfiguration(environment: Environment = DEFAULT_ENVIRONME
     TOPMEDIAI_MODE: 'live', TOPMEDIAI_ENV: environment,
     TOPMEDIAI_TOKEN: '', TOPMEDIAI_GATEWAY_HOST: '',
     TOPMEDIAI_SOURCE: String(config.source),
+    MCP_CLIENT_SOURCE: config.clientSource === undefined ? '' : String(config.clientSource),
     TOPMEDIAI_MEMBER_HOST: config.memberHost, TOPMEDIAI_IMAGE_HOST: config.imageHost,
     TOPMEDIAI_FFMPEG_PATH: config.ffmpegPath!, TOPMEDIAI_FFPROBE_PATH: config.ffprobePath!,
     TOPMEDIAI_UPLOAD_ROOT: config.uploadRoot ?? '',

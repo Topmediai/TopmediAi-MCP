@@ -113,7 +113,7 @@ export class ReferenceImages {
     // The legacy upload route does not validate login itself. Independently
     // verify the account before transmitting any image to that service.
     try {
-      await verifyAccountToken({ environment: this.config.environment, memberOrigin: this.config.memberHost }, this.config.token);
+      await verifyAccountToken({ environment: this.config.environment, memberOrigin: this.config.memberHost, clientSource: this.config.clientSource }, this.config.token);
     } catch (error) {
       throw new TopMediaiError(error instanceof AccountVerificationError && error.code === 'login_required' ? 'LOGIN_REQUIRED' : 'ACCOUNT_UNAVAILABLE', 'The account could not be verified. No image was uploaded.');
     }
