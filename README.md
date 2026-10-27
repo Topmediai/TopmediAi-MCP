@@ -59,7 +59,7 @@ npm.cmd run setup:plugin
 
 After updating the plugin, verify `get_service_status.server_version`. Do not assume the entire application needs a restart.
 
-Client identity is configured per launch with `MCP_CLIENT_SOURCE`: `5` for Codex, `6` for Claude Code, and `7` for Cursor. Unknown clients omit the business `source` header. Codex/Cursor installers set their own values; the existing `TOPMEDIAI_SOURCE` request-body channel remains separate. Reinstall or refresh launch settings and reconnect after updating. See [Client identity](docs/client-source.md).
+Client identity is configured per launch with `MCP_CLIENT_SOURCE`: `6` for Codex, `7` for Claude Code, and `8` for Cursor. Unknown clients omit the business `source` header. Codex/Cursor installers set their own values; the existing `TOPMEDIAI_SOURCE` request-body channel remains separate. Reinstall or refresh launch settings and reconnect after updating. See [Client identity](docs/client-source.md).
 
 ## Tools and creative workflow
 

@@ -65,4 +65,4 @@ For local plugin testing, place the contents of `plugin/.cursor-plugin/`, `plugi
 
 The generated configuration references this machine's compiled entry point. Regenerate it on another machine. Rebuild/reconnect after code updates and reinstall or recopy after skill changes. Actual Cursor chat sign-in, live generation, player interaction, and fullscreen remain client acceptance checks.
 
-The installer pins `MCP_CLIENT_SOURCE=7` for the business HTTP identity header without changing the request-body channel. See [Client identity](client-source.md).
+The installer pins `MCP_CLIENT_SOURCE=8` for the business HTTP identity header without changing the request-body channel. See [Client identity](client-source.md).

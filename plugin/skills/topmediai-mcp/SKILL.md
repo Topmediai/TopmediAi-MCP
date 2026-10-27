@@ -85,7 +85,7 @@ For `CREDENTIAL_STORE_LOCKED`, `CREDENTIAL_STORE_DENIED`, `CREDENTIAL_STORE_UNAV
 
 Codex/Cursor under the same OS user share the production credential. Logout/account changes affect subsequent calls in both; in-flight work retains its original credential. Keep confirmation preferences separate per chat. System storage is not isolation from every same-user process. Cursor installation uses `npm.cmd run install:cursor`, optionally `-- --project <directory>`, preserving unrelated configuration and storing private backups outside skill discovery. Do not treat installation checks as real host or account acceptance.
 
-`MCP_CLIENT_SOURCE` is fixed per launch/session: Codex 5, Claude Code 6, Cursor 7, unknown omitted. It affects business HTTP identity only, not `TOPMEDIAI_SOURCE` payload channels. Do not infer identity from models, OS, tool inputs, or arbitrary headers; do not change it during credential refresh.
+`MCP_CLIENT_SOURCE` is fixed per launch/session: Codex 6, Claude Code 7, Cursor 8, unknown omitted. It affects business HTTP identity only, not `TOPMEDIAI_SOURCE` payload channels. Do not infer identity from models, OS, tool inputs, or arbitrary headers; do not change it during credential refresh.
 
 ## Image previews (0.4.3)
 

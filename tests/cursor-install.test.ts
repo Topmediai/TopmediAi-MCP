@@ -26,7 +26,7 @@ test('Cursor reuses public production settings without serializing credentials o
   for (const environment of ['production'] as const) {
     const env = { TOPMEDIAI_TOKEN: 'synthetic-account-secret', COOKIE: 'synthetic-cookie', TOPMEDIAI_SOURCE: '2' };
     const cursor = cursorConfiguration(environment, env).mcpServers.topmediai;
-    assert.deepEqual(cursor, { type: 'stdio', ...pluginConfiguration(environment, { ...env, MCP_CLIENT_SOURCE: '7' }).mcpServers.topmediai });
+    assert.deepEqual(cursor, { type: 'stdio', ...pluginConfiguration(environment, { ...env, MCP_CLIENT_SOURCE: '8' }).mcpServers.topmediai });
     assert.ok(isAbsolute(cursor.command));
     assert.equal(cursor.args[0], resolve(ROOT, 'dist/src/index.js'));
     assert.equal(cursor.env.TOPMEDIAI_ENV, environment);

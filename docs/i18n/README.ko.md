@@ -55,7 +55,7 @@ npm.cmd run setup:plugin
 
 갱신 후 `get_service_status.server_version`을 확인하세요. 전체 앱 재시작을 기본 절차로 요구하지 않습니다.
 
-클라이언트별 실행 설정에서 `MCP_CLIENT_SOURCE`를 지정합니다. Codex는 `5`, Claude Code는 `6`, Cursor는 `7`이며 알 수 없으면 헤더를 보내지 않습니다. 설치 프로그램은 해당 값을 지정하고 기존 `TOPMEDIAI_SOURCE` 본문 채널은 유지합니다. 업데이트 후 실행 설정을 갱신하고 다시 연결하세요. [클라이언트 식별(영어)](../client-source.md).
+클라이언트별 실행 설정에서 `MCP_CLIENT_SOURCE`를 지정합니다. Codex는 `6`, Claude Code는 `7`, Cursor는 `8`이며 알 수 없으면 헤더를 보내지 않습니다. 설치 프로그램은 해당 값을 지정하고 기존 `TOPMEDIAI_SOURCE` 본문 채널은 유지합니다. 업데이트 후 실행 설정을 갱신하고 다시 연결하세요. [클라이언트 식별(영어)](../client-source.md).
 
 오디오 스위치를 제공하는 동영상 작업은 `generate_audio`를 생략하면 기본적으로 소리를 생성합니다. 명시적 무음 요청에는 `false`를 지정하세요. 스위치 없는 모델은 공급자 동작을 따르며 강제 오디오 모델은 음소거할 수 없습니다. 목록·견적·제출 설정을 일치시키고 변경 후 다시 견적을 받으세요.
 

@@ -55,7 +55,7 @@ npm.cmd run setup:plugin
 
 更新後は `get_service_status.server_version` を確認します。アプリ全体の再起動を前提にしないでください。
 
-クライアント起動ごとに `MCP_CLIENT_SOURCE` を設定します：Codex は `5`、Claude Code は `6`、Cursor は `7`、不明ならヘッダーを省略します。インストーラーは各値を設定し、`TOPMEDIAI_SOURCE` の本文チャネルは変わりません。更新後は起動設定を更新して再接続します。[クライアント識別（英語）](../client-source.md)。
+クライアント起動ごとに `MCP_CLIENT_SOURCE` を設定します：Codex は `6`、Claude Code は `7`、Cursor は `8`、不明ならヘッダーを省略します。インストーラーは各値を設定し、`TOPMEDIAI_SOURCE` の本文チャネルは変わりません。更新後は起動設定を更新して再接続します。[クライアント識別（英語）](../client-source.md)。
 
 音声スイッチのある動画モデルは `generate_audio` 省略時に音声ありになります。明示的な無音要求には `false` を指定します。スイッチがないモデルは提供元の動作に従い、音声必須モデルは無音にできません。カタログ・見積もり・送信で同じ設定を使い、変更後は再見積もりします。
 

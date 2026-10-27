@@ -9,7 +9,7 @@ import { pluginConfiguration } from './setup-plugin.js';
 
 /** Use the same frozen public settings and credential refresh as the Codex entry point. */
 export function cursorConfiguration(environment: Environment = DEFAULT_ENVIRONMENT, env: NodeJS.ProcessEnv = process.env) {
-  const launch = pluginConfiguration(environment, { ...env, MCP_CLIENT_SOURCE: '7' }).mcpServers.topmediai;
+  const launch = pluginConfiguration(environment, { ...env, MCP_CLIENT_SOURCE: '8' }).mcpServers.topmediai;
   return { mcpServers: { topmediai: { type: 'stdio' as const, ...launch } } };
 }
 

@@ -36,7 +36,7 @@ npm.cmd run setup:plugin
 
 Refresh the plugin package, reconnect MCP, and verify `get_service_status.server_version`. Installed configuration contains local paths and must not be committed or distributed. Credentials, media, task records, and logs must remain outside release files.
 
-Configure `MCP_CLIENT_SOURCE` per client launch, not in a shared `.env`: Codex uses `5`, Claude Code `6`, Cursor `7`, and unknown clients omit the outbound identity header. Installers set their respective values; generic `setup:plugin` preserves an explicit value and otherwise writes an empty override. The original `TOPMEDIAI_SOURCE` payload channel is unchanged. See [Client identity](client-source.md).
+Configure `MCP_CLIENT_SOURCE` per client launch, not in a shared `.env`: Codex uses `6`, Claude Code `7`, Cursor `8`, and unknown clients omit the outbound identity header. Installers set their respective values; generic `setup:plugin` preserves an explicit value and otherwise writes an empty override. The original `TOPMEDIAI_SOURCE` payload channel is unchanged. See [Client identity](client-source.md).
 
 Changing service addresses or accounts may select a different local task directory. Preserve original records and check the original task or official history for unknown submissions; do not automatically resubmit. The limited legacy gateway is enabled only by an explicit `TOPMEDIAI_PRODUCTION_GATEWAY_HOST`.
 

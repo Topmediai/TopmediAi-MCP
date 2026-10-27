@@ -55,7 +55,7 @@ npm.cmd run setup:plugin
 
 Nach Aktualisierungen `get_service_status.server_version` prüfen; ein Neustart der gesamten Anwendung ist nicht grundsätzlich nötig.
 
-Client-Identität pro Start über `MCP_CLIENT_SOURCE`: Codex `5`, Claude Code `6`, Cursor `7`, unbekannt ohne Header. Installer setzen ihren eigenen Wert; `TOPMEDIAI_SOURCE` im Request-Body bleibt unverändert. Nach Updates Startkonfiguration aktualisieren und neu verbinden. Siehe [Client-Identität (Englisch)](../client-source.md).
+Client-Identität pro Start über `MCP_CLIENT_SOURCE`: Codex `6`, Claude Code `7`, Cursor `8`, unbekannt ohne Header. Installer setzen ihren eigenen Wert; `TOPMEDIAI_SOURCE` im Request-Body bleibt unverändert. Nach Updates Startkonfiguration aktualisieren und neu verbinden. Siehe [Client-Identität (Englisch)](../client-source.md).
 
 Videooperationen mit Audioschalter erzeugen standardmäßig Ton, wenn `generate_audio` fehlt. Für ausdrücklich stumme Videos `false` setzen. Modelle ohne Schalter behalten das Anbieterverhalten; Modelle mit festem Audio lassen sich nicht stummschalten. Katalog, Angebot und Übermittlung müssen übereinstimmen; nach Änderungen neu kalkulieren.
 

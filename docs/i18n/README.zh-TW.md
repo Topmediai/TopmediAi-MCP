@@ -55,7 +55,7 @@ npm.cmd run setup:plugin
 
 更新後請核對 `get_service_status.server_version`，不必預設重新啟動整個應用程式。
 
-以各客戶端的啟動設定指定 `MCP_CLIENT_SOURCE`：Codex 為 `5`、Claude Code 為 `6`、Cursor 為 `7`，未知則省略請求標頭。安裝程式會設定各自編號，原 `TOPMEDIAI_SOURCE` 請求本文渠道不變。更新後請更新啟動設定並重新連線，詳見[客戶端來源（英文）](../client-source.md)。
+以各客戶端的啟動設定指定 `MCP_CLIENT_SOURCE`：Codex 為 `6`、Claude Code 為 `7`、Cursor 為 `8`，未知則省略請求標頭。安裝程式會設定各自編號，原 `TOPMEDIAI_SOURCE` 請求本文渠道不變。更新後請更新啟動設定並重新連線，詳見[客戶端來源（英文）](../client-source.md)。
 
 提供聲音開關的影片操作在省略 `generate_audio` 時預設有聲。明確要求靜音才傳 `false`；無開關模型遵循供應商行為，強制有聲模型無法關閉。目錄、報價及提交需使用相同設定，變更後重新報價。
 

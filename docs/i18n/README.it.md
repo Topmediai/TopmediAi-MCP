@@ -55,7 +55,7 @@ npm.cmd run setup:plugin
 
 Dopo gli aggiornamenti verifica `get_service_status.server_version`. Non presumere che sia necessario riavviare l’intera applicazione.
 
-Imposta `MCP_CLIENT_SOURCE` per avvio: Codex `5`, Claude Code `6`, Cursor `7`; se sconosciuto l’header è omesso. Gli installer fissano il proprio valore; il canale `TOPMEDIAI_SOURCE` nel corpo non cambia. Aggiorna configurazione e riconnetti dopo gli aggiornamenti. Vedi [Identità del client (inglese)](../client-source.md).
+Imposta `MCP_CLIENT_SOURCE` per avvio: Codex `6`, Claude Code `7`, Cursor `8`; se sconosciuto l’header è omesso. Gli installer fissano il proprio valore; il canale `TOPMEDIAI_SOURCE` nel corpo non cambia. Aggiorna configurazione e riconnetti dopo gli aggiornamenti. Vedi [Identità del client (inglese)](../client-source.md).
 
 Le operazioni video con interruttore audio attivano il suono se `generate_audio` è omesso. Usa `false` solo per una richiesta esplicita di video muto. I modelli senza interruttore mantengono il comportamento del fornitore; quelli con audio obbligatorio non possono essere silenziati. Catalogo, preventivo e invio devono concordare; richiedi un nuovo preventivo dopo modifiche.
 

@@ -4,9 +4,9 @@
 
 | Client | Launch setting | Outbound business HTTP header |
 | --- | --- | --- |
-| Codex | `MCP_CLIENT_SOURCE=5` | `source: 5` |
-| Claude Code | `MCP_CLIENT_SOURCE=6` | `source: 6` |
-| Cursor | `MCP_CLIENT_SOURCE=7` | `source: 7` |
+| Codex | `MCP_CLIENT_SOURCE=6` | `source: 6` |
+| Claude Code | `MCP_CLIENT_SOURCE=7` | `source: 7` |
+| Cursor | `MCP_CLIENT_SOURCE=8` | `source: 8` |
 | Unknown | Unset or empty | Header omitted |
 
 Other nonempty values are rejected with `INVALID_CONFIG`; they never default to Codex. Identity is not guessed from `clientInfo.name`, model names, OS, tool arguments, or untrusted inbound headers. `get_service_status.mcp_client_source` shows the value, or `null` when unknown.
@@ -23,25 +23,10 @@ command = "node"
 args = ["C:/path/to/topmediai-mcp-public/dist/src/index.js"]
 
 [mcp_servers.topmediai.env]
-MCP_CLIENT_SOURCE = "5"
+MCP_CLIENT_SOURCE = "6"
 ```
 
 Claude Code project `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "topmediai": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["C:/path/to/topmediai-mcp-public/dist/src/index.js"],
-      "env": { "MCP_CLIENT_SOURCE": "6" }
-    }
-  }
-}
-```
-
-Cursor project `.cursor/mcp.json`:
 
 ```json
 {
@@ -56,23 +41,38 @@ Cursor project `.cursor/mcp.json`:
 }
 ```
 
-`install:codex` writes `5`; `setup:cursor` and `install:cursor` write `7`, overriding another inherited client value. Generic `setup:plugin` preserves an explicit value and writes an empty override when unconfigured. To refresh a Codex plugin launch:
+Cursor project `.cursor/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "topmediai": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:/path/to/topmediai-mcp-public/dist/src/index.js"],
+      "env": { "MCP_CLIENT_SOURCE": "8" }
+    }
+  }
+}
+```
+
+`install:codex` writes `6`; `setup:cursor` and `install:cursor` write `8`, overriding another inherited client value. Generic `setup:plugin` preserves an explicit value and writes an empty override when unconfigured. To refresh a Codex plugin launch:
 
 ```powershell
-$env:MCP_CLIENT_SOURCE = '5'
+$env:MCP_CLIENT_SOURCE = '6'
 npm.cmd run setup:plugin
 ```
 
-Reconnect MCP after launch-setting changes and refresh installed plugin caches through their installation workflow. Source changes do not rewrite existing client configuration. Credential refresh does not change a connection's identity.
+Reconnect MCP after launch-setting changes and refresh installed plugin caches through their installation workflow. Source changes do not rewrite existing client configuration. When upgrading from the previous 5/6/7 mapping, rerun the client installer or update launch settings to Codex 6, Claude Code 7, or Cursor 8 before reconnecting. The old value 5 is rejected; old values 6 and 7 now identify different clients. Credential refresh does not change a connection's identity.
 
 ## Embedded session isolation
 
 There is no public HTTP MCP listener. An embedded host can create one `McpServer` and transport per session, passing identity from trusted routing/deployment configuration as the fourth argument:
 
 ```typescript
-const codex = createServer(config, reloadCredentials, undefined, { clientSource: 5 });
-const claude = createServer(config, reloadCredentials, undefined, { clientSource: 6 });
-const cursor = createServer(config, reloadCredentials, undefined, { clientSource: 7 });
+const codex = createServer(config, reloadCredentials, undefined, { clientSource: 6 });
+const claude = createServer(config, reloadCredentials, undefined, { clientSource: 7 });
+const cursor = createServer(config, reloadCredentials, undefined, { clientSource: 8 });
 const unknown = createServer(config, reloadCredentials, undefined, { clientSource: undefined });
 ```
 

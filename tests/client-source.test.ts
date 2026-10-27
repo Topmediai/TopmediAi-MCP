@@ -15,7 +15,7 @@ import { cursorConfiguration } from '../scripts/setup-cursor.js';
 import { TopMediaiError } from '../src/types.js';
 
 const token = 'F'.repeat(42);
-const sources = [5, 6, 7, undefined] as const;
+const sources = [6, 7, 8, undefined] as const;
 
 test('client source is explicit, strict and independent of the existing payload channel', () => {
   for (const source of sources) {
@@ -24,7 +24,7 @@ test('client source is explicit, strict and independent of the existing payload 
     assert.equal(config.source, 2);
   }
   assert.equal(parseClientSource(''), undefined);
-  for (const value of ['0', '4', '8', 'Codex', 'claude', 'gpt-5', 'windows', '5, 6', '05', '5\nsource: 6', null]) {
+  for (const value of [5, '0', '4', '5', '9', 'Codex', 'claude', 'gpt-5', 'windows', '5, 6', '05', '5\nsource: 6', null]) {
     assert.throws(() => parseClientSource(value), (error: unknown) => error instanceof TopMediaiError && error.code === 'INVALID_CONFIG');
   }
   const env = { MCP_CLIENT_SOURCE: '6' };
@@ -37,7 +37,7 @@ test('generated launches preserve explicit source and Cursor overrides inherited
   for (const source of sources) {
     const env = { MCP_CLIENT_SOURCE: source?.toString() };
     assert.equal(pluginConfiguration('production', env).mcpServers.topmediai.env.MCP_CLIENT_SOURCE, source?.toString() ?? '');
-    assert.equal(cursorConfiguration('production', env).mcpServers.topmediai.env.MCP_CLIENT_SOURCE, '7');
+    assert.equal(cursorConfiguration('production', env).mcpServers.topmediai.env.MCP_CLIENT_SOURCE, '8');
   }
 });
 
@@ -111,7 +111,7 @@ test('common HTTP layer replaces duplicate casing, omits unknown and never label
     assert.equal(calls.at(-1)!.headers.get('source'), source?.toString() ?? null);
     assert.equal(calls.at(-1)!.headers.get('x-test'), 'preserved');
   }
-  await businessFetch({ memberHost: 'https://business.fixture.invalid', clientSource: 5 }, new URL('/cdn', origin), init);
+  await businessFetch({ memberHost: 'https://business.fixture.invalid', clientSource: 6 }, new URL('/cdn', origin), init);
   assert.equal(calls.at(-1)!.headers.get('source'), null);
   assert.deepEqual(init.headers, [['Source', '4'], ['source', '6'], ['X-Test', 'preserved']]);
 });
@@ -132,15 +132,15 @@ test('shared process isolates concurrent MCP sessions, explicit unknown, reloads
   });
   const clients: Client[] = [];
   for (const [index, source] of sources.entries()) {
-    const config = loadConfig({ MCP_CLIENT_SOURCE: '5', TOPMEDIAI_TOKEN: String.fromCharCode(65 + index).repeat(42) }, () => null);
+    const config = loadConfig({ MCP_CLIENT_SOURCE: '6', TOPMEDIAI_TOKEN: String.fromCharCode(65 + index).repeat(42) }, () => null);
     const session = { clientSource: source as McpClientSource | undefined };
     const server = createServer(config, async () => {
       await new Promise<void>(resolve => setImmediate(resolve));
       // Even a shared loader returning another source cannot overwrite session identity.
-      return { ...config, clientSource: 7 };
+      return { ...config, clientSource: 8 };
     }, undefined, session);
-    session.clientSource = 7;
-    config.clientSource = 6;
+    session.clientSource = 8;
+    config.clientSource = 7;
     // All peers claim the same client name; source must come from trusted configuration.
     const client = new Client({ name: 'codex', version: '1' });
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
