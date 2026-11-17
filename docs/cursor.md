@@ -15,6 +15,8 @@ Production endpoints are built in. No `.env`, hostname, or copied token is requi
 
 The default installation merges `mcpServers.topmediai` into `~/.cursor/mcp.json` and installs the shared instructions at `~/.cursor/skills/topmediai-mcp/SKILL.md`. Other servers and top-level settings are preserved. On Windows, `~` is normally `%USERPROFILE%`.
 
+The installer also copies `ugc-video-ad` and `clone-video-ad` with their supporting files under the same `skills/` directory. Check that both names appear in Cursor's skill list after refreshing the client. See the [video ad skills](../README.md#video-ad-skills) for the available workflows.
+
 For a project-only installation:
 
 ```powershell

@@ -1,0 +1,8 @@
+interface:
+  display_name: "TopMediai UGC Video Ad"
+  short_description: "Create natural phone-shot UGC ads from product references"
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "topmediai"
+      description: "Connected TopMediai MCP for requested video production"

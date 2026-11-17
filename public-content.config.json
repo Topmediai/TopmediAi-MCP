@@ -24,6 +24,48 @@
   },
   "exceptions": [
     {
+      "file": "plugin/skills/clone-video-ad/references/automatic-setup.md",
+      "category": "unreviewed-host",
+      "line_sha256": "455f0a56982ac2d864fadd254d2019c7bf62093c1cb4cb9eabd4c2066208b07a",
+      "reason": "Public uv managed Python documentation referenced by the depth skill."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/references/automatic-setup.md",
+      "category": "unreviewed-host",
+      "line_sha256": "54d34b7bcc71ac3221e80183bbe79550585a25ee35da93b8d5ddbff121312cb5",
+      "reason": "Public model card for the ONNX export used by the depth skill."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/references/depth-motion-guide.md",
+      "category": "unreviewed-host",
+      "line_sha256": "a65c5e26098fa1d47361964a4aacc44254faa903f6f0f616dca14d22ce3a7c75",
+      "reason": "Public model card identifying the ONNX export used by the depth skill."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/references/depth-motion-guide.md",
+      "category": "unreviewed-host",
+      "line_sha256": "e75734805485ab5942522bc34ea3ffae2e17abf88b2971ee96060732355720ba",
+      "reason": "Public upstream Depth Anything V2 Small model card."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/references/depth-motion-guide.md",
+      "category": "unreviewed-host",
+      "line_sha256": "e3006a93887884740ceb22c7398346c9bfc16d88f538e3dd9b79c419da215be9",
+      "reason": "Public model provider guide referenced for video prompt syntax."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/scripts/bootstrap_depth.py",
+      "category": "unreviewed-host",
+      "line_sha256": "3c48593640030675a1f33ea12e20dd81ab5a1bcb4113e0bf8a16303556cf5e62",
+      "reason": "Pinned ONNX download. The bootstrap verifies the expected SHA-256 before loading it."
+    },
+    {
+      "file": "plugin/skills/clone-video-ad/scripts/bootstrap_depth.py",
+      "category": "unreviewed-host",
+      "line_sha256": "3dc65a37bc7401dd69a53d44ccbd3184bc15373142e87e37521e5a85f53cf078",
+      "reason": "Public Python package index. The bootstrap installs hash-locked binary wheels."
+    },
+    {
       "file": "src/media/music-result.ts",
       "category": "client-codec-constant",
       "line_sha256": "62119c49b754d1c8a0e9cb2781c9c1ba577c8b69a59222dffa757b39a9ad7676",

@@ -1,0 +1,20 @@
+[
+  "ugc-video-ad/SKILL.md",
+  "ugc-video-ad/LICENSE",
+  "ugc-video-ad/NOTICE",
+  "ugc-video-ad/agents/openai.yaml",
+  "ugc-video-ad/references/topmediai-mcp.md",
+  "clone-video-ad/SKILL.md",
+  "clone-video-ad/LICENSE",
+  "clone-video-ad/NOTICE",
+  "clone-video-ad/agents/openai.yaml",
+  "clone-video-ad/references/automatic-setup.md",
+  "clone-video-ad/references/depth-motion-guide.md",
+  "clone-video-ad/references/scene-routing-and-quality.md",
+  "clone-video-ad/scripts/bootstrap_depth.py",
+  "clone-video-ad/scripts/make_depth_video.py",
+  "clone-video-ad/scripts/requirements.in",
+  "clone-video-ad/scripts/requirements.lock",
+  "clone-video-ad/scripts/run_depth.ps1",
+  "clone-video-ad/scripts/run_depth.sh"
+]

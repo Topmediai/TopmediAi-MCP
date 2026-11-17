@@ -1,0 +1,20 @@
+Attribution Notice
+==================
+
+This project contains material adapted from the following MIT-licensed open
+source projects. Adaptations include restructuring, rewording, renaming and
+platform-decoupling changes. Original copyright notices are retained below.
+
+1. ugc-video-ad
+   Adapted from: https://github.com/Jarad-z/ugc-video-skill
+   Original license: MIT (Copyright (c) Jarad-z)
+
+2. clone-video-ad
+   Adapted from: https://github.com/lindaro169/ugc-deconstructor
+   Original license: MIT (Copyright (c) lindaro169)
+
+3. ad-script
+   Adapted from: https://github.com/creatify-ai/video-ad-generator
+   Original license: MIT (Copyright (c) Creatify-AI)
+
+All adapted material remains under the MIT License.

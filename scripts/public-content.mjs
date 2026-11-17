@@ -2,6 +2,7 @@ import { readFile, readdir, lstat, realpath } from 'node:fs/promises';
 import { resolve, relative, sep, dirname, extname, isAbsolute, posix } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import adSkillFiles from './ad-skill-files.json' with { type: 'json' };
 
 export const digest = value => createHash('sha256').update(value).digest('hex');
 export const gitEnvironment = () => Object.fromEntries(Object.entries(process.env)
@@ -12,7 +13,8 @@ const exactPaths = new Set(['.gitignore', '.env.example', '.agents/plugins/marke
   'docs/privacy.md', 'docs/production-switch.md', 'docs/releasing.md', 'docs/speech-integration.md', 'docs/image-to-image-security.md',
   'docs/client-source.md', 'docs/cursor.md',
   'plugin/.cursor-plugin/plugin.json', 'plugin/.codex-plugin/plugin.json', 'plugin/assets/topmediai-icon.png',
-  '.github/workflows/public-content.yml']);
+  '.github/workflows/public-content.yml', 'scripts/ad-skill-files.json',
+  ...adSkillFiles.map(path => `plugin/skills/${path}`)]);
 export function isPublicPath(path, build = false) {
   if (path.includes('\\') || isAbsolute(path) || path.split('/').some(part => part === '..' || part === '.')) return false;
   if (exactPaths.has(path)) return true;

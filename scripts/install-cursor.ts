@@ -77,7 +77,7 @@ export interface CursorInstallOptions {
   cursorDirectory?: string;
 }
 
-/** Install only TopMediai's server entry and skill; do not rewrite Codex's generated config. */
+/** Install the TopMediai server entry and the bundled skills. */
 export async function installCursor(options: CursorInstallOptions = {}) {
   const environment = options.environment ?? DEFAULT_ENVIRONMENT;
   const config = cursorConfiguration(environment, options.env ?? process.env);
@@ -85,12 +85,38 @@ export async function installCursor(options: CursorInstallOptions = {}) {
   const configPath = resolve(directory, 'mcp.json');
   const skillPath = resolve(directory, 'skills/topmediai-mcp/SKILL.md');
   const originalConfig = await readExisting(configPath);
-  const originalSkill = await readExisting(skillPath);
   // Validate and load all inputs before changing any user files.
   const configText = mergeConfiguration(originalConfig, config);
-  const skillText = await readFile(resolve(ROOT, 'plugin/skills/topmediai-mcp/SKILL.md'), 'utf8');
+  const adSkillFiles = JSON.parse(await readFile(resolve(ROOT, 'scripts/ad-skill-files.json'), 'utf8')) as string[];
+  const skillPaths = ['topmediai-mcp/SKILL.md', ...adSkillFiles];
+  const skillDirectories = new Set<string>();
+  for (const relative of skillPaths) {
+    const parts = relative.split('/');
+    if (parts.some(part => !/^[a-z0-9_-][a-z0-9_.-]*$/i.test(part))) {
+      throw new TopMediaiError('CURSOR_INSTALL_FAILED', 'A bundled skill path is invalid.');
+    }
+    for (let length = 0; length < parts.length; length++) {
+      skillDirectories.add(resolve(directory, 'skills', ...parts.slice(0, length)));
+    }
+  }
+  for (const path of skillDirectories) {
+    const info = await lstat(path).catch(error => {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null;
+      throw error;
+    });
+    if (info && !info.isDirectory()) {
+      throw new TopMediaiError('CURSOR_INSTALL_FAILED', 'The Cursor skill folder must be a regular directory.');
+    }
+  }
+  const skillFiles = await Promise.all(skillPaths.map(async relative => {
+    const path = resolve(directory, 'skills', relative);
+    const original = await readExisting(path);
+    const text = await readFile(resolve(ROOT, 'plugin/skills', relative), 'utf8');
+    const backupName = path === skillPath ? 'SKILL.md' : `skills/${relative}`;
+    return { path, text, original, backupName };
+  }));
   const files = [
-    { path: skillPath, text: skillText, original: originalSkill, backupName: 'SKILL.md' },
+    ...skillFiles,
     { path: configPath, text: configText, original: originalConfig, backupName: 'mcp.json' },
   ].filter(file => file.text !== file.original);
   const backupDirectory = resolve(directory, 'backups/topmediai-mcp', randomUUID());
@@ -101,8 +127,8 @@ export async function installCursor(options: CursorInstallOptions = {}) {
     }
     await mkdir(dirname(file.path), { recursive: true });
     if (file.original !== null) {
-      await mkdir(backupDirectory, { recursive: true });
       const backupPath = resolve(backupDirectory, file.backupName);
+      await mkdir(dirname(backupPath), { recursive: true });
       await writeFile(backupPath, file.original, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
       backups.push(backupPath);
     }
@@ -123,6 +149,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     console.log(`Installed TopMediAi-MCP for Cursor (${installed.environment}). No account token was copied into the configuration.`);
     console.log(`MCP configuration: ${installed.configPath}`);
     console.log(`Shared skill: ${installed.skillPath}`);
+    console.log('Installed ugc-video-ad and clone-video-ad with their supporting files.');
     for (const backup of installed.backups) console.log(`Previous file backup: ${backup}`);
     console.log(`Local MCP check: version=${check.server_version}, environment=${check.environment}, tools=${check.tool_count}, credential_configured=${check.token_configured}, credential_refresh=${check.credential_refresh_enabled}. This checks a separate process, not tools in the current Cursor chat or backend login validity.`);
     console.log('In Cursor, enable topmediai under MCP settings and call get_service_status in an Agent chat. If tools are missing, refresh/reconnect the server and try a new chat. A project .cursor/mcp.json entry with the same server name can override the global entry.');

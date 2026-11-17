@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { installCursor, parseCursorArguments } from '../scripts/install-cursor.js';
@@ -52,6 +52,7 @@ test('Cursor CLI supports global/project installation and rejects ambiguous opti
 test('Cursor installation preserves other servers/settings and backs up the exact previous config and skill', async t => {
   const { directory } = await fixture(t);
   await mkdir(resolve(directory, 'skills/topmediai-mcp'), { recursive: true });
+  await mkdir(resolve(directory, 'skills/clone-video-ad/references'), { recursive: true });
   const original = '\uFEFF' + JSON.stringify({
     customSetting: { enabled: true },
     mcpServers: {
@@ -60,17 +61,20 @@ test('Cursor installation preserves other servers/settings and backs up the exac
     },
   });
   const oldSkill = 'Existing user skill\r\n';
+  const oldReference = 'Existing ad skill reference\r\n';
   await writeFile(resolve(directory, 'mcp.json'), original);
   await writeFile(resolve(directory, 'skills/topmediai-mcp/SKILL.md'), oldSkill);
+  await writeFile(resolve(directory, 'skills/clone-video-ad/references/automatic-setup.md'), oldReference);
   const installed = await installCursor({ cursorDirectory: directory, env: {} });
   const config = JSON.parse(await readFile(installed.configPath, 'utf8'));
   assert.deepEqual(config.customSetting, { enabled: true });
   assert.equal(config.mcpServers.unrelated.headers.Authorization, 'synthetic-other-secret');
   assert.deepEqual(config.mcpServers.topmediai, cursorConfiguration(undefined, {}).mcpServers.topmediai);
   assert.ok(!JSON.stringify(config).includes('synthetic-old-secret'));
-  assert.equal(installed.backups.length, 2);
-  assert.deepEqual(new Set(await Promise.all(installed.backups.map(path => readFile(path, 'utf8')))), new Set([original, oldSkill]));
+  assert.equal(installed.backups.length, 3);
+  assert.deepEqual(new Set(await Promise.all(installed.backups.map(path => readFile(path, 'utf8')))), new Set([original, oldSkill, oldReference]));
   assert.ok(installed.backups.every(path => path.startsWith(resolve(directory, 'backups/topmediai-mcp'))));
+  assert.ok(installed.backups.some(path => path.endsWith(join('skills/clone-video-ad/references/automatic-setup.md'))));
   assert.equal(await readFile(installed.skillPath, 'utf8'), await readFile(resolve(ROOT, 'plugin/skills/topmediai-mcp/SKILL.md'), 'utf8'));
 });
 
@@ -143,4 +147,8 @@ test('compiled Cursor installer checks the real stdio entry from a different pro
   const config = JSON.parse(await readFile(resolve(root, '.cursor/mcp.json'), 'utf8'));
   assert.equal(config.mcpServers.topmediai.env.TOPMEDIAI_ENV, 'production');
   await readFile(resolve(root, '.cursor/skills/topmediai-mcp/SKILL.md'));
+  const adSkillFiles = JSON.parse(await readFile(resolve(ROOT, 'scripts/ad-skill-files.json'), 'utf8')) as string[];
+  for (const path of adSkillFiles) {
+    assert.deepEqual(await readFile(resolve(root, '.cursor/skills', path)), await readFile(resolve(ROOT, 'plugin/skills', path)));
+  }
 });

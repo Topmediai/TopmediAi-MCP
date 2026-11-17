@@ -11,8 +11,8 @@ export async function checkPluginServer(launch: StdioServerParameters) {
   try {
     await client.connect(transport, { timeout: 15_000 });
     const tools = (await client.listTools(undefined, { timeout: 15_000 })).tools.map(tool => tool.name);
-    for (const name of ['get_service_status', 'start_login', 'wait_for_login', 'cancel_login', 'get_balance', 'review_generation_plan', 'estimate_image_cost', 'generate_image', 'estimate_tts_cost', 'generate_tts', 'estimate_sts_cost', 'generate_sts', 'upload_speech_audio']) {
-      if (!tools.includes(name)) throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The installed MCP does not expose the required TopMediai generation tools.');
+    for (const name of ['get_service_status', 'start_login', 'wait_for_login', 'cancel_login', 'get_balance', 'review_generation_plan', 'estimate_image_cost', 'generate_image', 'estimate_tts_cost', 'generate_tts', 'estimate_sts_cost', 'generate_sts', 'upload_speech_audio', 'preview_image_task', 'preview_audio_task', 'preview_video_task']) {
+      if (!tools.includes(name)) throw new TopMediaiError('PLUGIN_CHECK_FAILED', 'The installed MCP does not expose the required TopMediai tools.');
     }
     const result = await client.callTool({ name: 'get_service_status', arguments: {} }, undefined, { timeout: 40_000 });
     const status = result.structuredContent as Record<string, unknown> | undefined;

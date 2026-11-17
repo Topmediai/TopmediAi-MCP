@@ -84,6 +84,13 @@ Timeouts, cancellations, disconnects, and unknown submission outcomes do not pro
 
 Prefer image previews after completion. For expired image links, query the original task with `get_image_task({request_id, refresh_result:true})`; link renewal is not guaranteed. Deliver audio through a player or named links and video through an inline player with named original links. Distinguish preview failures from generation failures, and deliver successful artifacts even when other stages fail.
 
+## Video ad skills
+
+Codex and Cursor include two skills for making video ads. Refresh the plugin or rerun the Cursor installer after updating, then check that both skills appear in the client.
+
+- [`ugc-video-ad`](plugin/skills/ugc-video-ad/SKILL.md) uses product photos and selling points to draft or produce presenter, unboxing, and review videos. You can ask for a script or prompt only.
+- [`clone-video-ad`](plugin/skills/clone-video-ad/SKILL.md) analyzes a reference ad and can hand off an adapted concept to `ugc-video-ad` for production. Its optional depth workflow sets up local dependencies and a model on first use. See [reference media upload requirements](#uploading-reference-media) before using a depth clip as a reference.
+
 ## Video preview
 
 When video completes, call `preview_video_task` with the original `task_handle` to show a read-only inline player and include named original video links. The player supports click-to-play, pause, seeking, volume, fullscreen, and retry. Show successful versions for partial results without reopening unchanged cards.

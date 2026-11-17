@@ -63,6 +63,14 @@ test('localized READMEs are publishable without allowing unrelated or nested fil
   for (const path of ['docs/i18n/private.json', 'docs/i18n/README.unknown.md', 'docs/i18n/nested/README.ja.md', 'docs/i18n/../README.ja.md']) assert.equal(isPublicPath(path), false);
 });
 
+test('bundled ad skills publish their declared files and exclude local caches and assets', () => {
+  for (const path of ['scripts/ad-skill-files.json', 'plugin/skills/ugc-video-ad/SKILL.md',
+    'plugin/skills/clone-video-ad/scripts/requirements.lock']) assert.equal(isPublicPath(path), true);
+  for (const path of ['plugin/skills/ugc-video-ad/notes.md', 'plugin/skills/clone-video-ad/scripts/model.onnx']) {
+    assert.equal(isPublicPath(path), false);
+  }
+});
+
 test('public skill entrypoints support TopMediai rename migrations while excluding other files', () => {
   for (const path of ['plugin/skills/topmediai-mcp/SKILL.md', 'plugin/skills/topmediai-image/SKILL.md']) assert.equal(isPublicPath(path), true);
   for (const path of ['plugin/skills/private/SKILL.md', 'plugin/skills/topmediai-mcp/private.json', 'plugin/skills/topmediai-mcp/../SKILL.md', 'plugin/skills/topmediai-mcp/nested/SKILL.md']) assert.equal(isPublicPath(path), false);

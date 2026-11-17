@@ -5,6 +5,7 @@ dist/
 .env.*
 !.env.example
 plugin/.mcp.json
+!plugin/skills/clone-video-ad/scripts/requirements.lock
 plugin/.cursor-mcp.json
 .cursor/
 *.log
